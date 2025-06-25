@@ -1,6 +1,6 @@
 [project]
 name = "sdb2xml"
-version = "0.1.0"
+version = "0.1.4"
 description = "Dump SDB file to xml using apphelp.dll"
 readme = "README.md"
 license = "MIT"
@@ -18,8 +18,8 @@ classifiers = [
     "Topic :: Utilities",
 ]
 
-
 [project.urls]
+Homepage = "https://pypi.org/project/sdb2xml/"
 Repository = "https://github.com/learn-more/sdb2xml.git"
 
 [project.scripts]
@@ -28,3 +28,16 @@ sdb2xml = "sdb2xml:main"
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.sdist]
+exclude = [
+  ".vscode",
+  ".python-version",
+  "uv.lock",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4.1",
+]
+

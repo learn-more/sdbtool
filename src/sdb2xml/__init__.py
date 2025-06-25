@@ -95,7 +95,7 @@ def dump_tag(node, tag):
     if tag.type == apphelp.TAG_TYPE_NULL:
         node.close()
     elif tag.type == apphelp.TAG_TYPE_BYTE:
-        pass
+        node.write("<!-- UNHANDLED BYTE TAG, please report this at https://github.com/learn-more/sdb2xml -->")
     elif tag.type == apphelp.TAG_TYPE_WORD:
         val = tag.as_word()
         node.write(f"{val}")
@@ -127,6 +127,7 @@ def dump_db(path: str):
             "xmlns:xs": "http://www.w3.org/2001/XMLSchema",
             "path": path,
         }
+        sys.stdout.reconfigure(encoding='utf-8')
         with Xml(sys.stdout, "SDB", 0, attrs, xmltag=True) as node:
             dump_tag(node, db.root())
 

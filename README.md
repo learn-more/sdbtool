@@ -10,20 +10,12 @@ A tool for converting Microsoft Application Compatibility Database (SDB) files t
 
 ## Requirements
 
-- Python 3.10+ (or specify your language/environment)
-
-## Installation
-
-```bash
-git clone https://github.com/yourusername/sdb2xml.git
-cd sdb2xml
-pip install -r requirements.txt
-```
+- Python 3.10+
 
 ## Usage
 
 ```bash
-python sdb2xml.py input.sdb
+uvx sdb2xml input.sdb
 ```
 
 - `input.sdb`: Path to the SDB file.
@@ -35,8 +27,3 @@ Contributions are welcome! Please open issues or submit pull requests.
 ## License
 
 This project is licensed under the MIT License.
-
-## Acknowledgments
-
-- Inspired by the need to analyze Windows compatibility databases.
-- Thanks to the open source community.
