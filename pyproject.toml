@@ -1,0 +1,30 @@
+[project]
+name = "sdb2xml"
+version = "0.1.0"
+description = "Dump SDB file to xml using apphelp.dll"
+readme = "README.md"
+license = "MIT"
+authors = [
+    { name = "Mark Jansen", email = "mark.jansen@reactos.org" }
+]
+requires-python = ">=3.10"
+dependencies = []
+keywords = ["sdb", "sdb2xml", "shim", "apphelp", "appcompat", "shimeng"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Programming Language :: Python :: 3",
+    "Operating System :: Microsoft :: Windows",
+    "Topic :: Utilities",
+]
+
+
+[project.urls]
+Repository = "https://github.com/learn-more/sdb2xml.git"
+
+[project.scripts]
+sdb2xml = "sdb2xml:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
