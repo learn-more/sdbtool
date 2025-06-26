@@ -4,7 +4,6 @@ LICENSE:     MIT (https://spdx.org/licenses/MIT)
 PURPOSE:     Entrypoint of the sdb2xml tool, which converts SDB files to XML format.
 COPYRIGHT:   Copyright 2025 Mark Jansen <mark.jansen@reactos.org>
 '''
-import sys
 import sdb2xml.apphelp as apphelp
 from base64 import b64encode
 from xml.sax.saxutils import escape
@@ -118,22 +117,15 @@ def dump_tag(node, tag):
     else:
         raise ValueError(f"Unknown tag type: {tag.type} for tag {tag.name}")
 
-def dump_db(path: str):
-    with apphelp.SdbDatabase(path, apphelp.PathType.DOS_PATH) as db:
+
+def convert(input_file: str, output_stream):
+    with apphelp.SdbDatabase(input_file, apphelp.PathType.DOS_PATH) as db:
         if not db:
-            print(f"Failed to open database at '{path}'")
+            print(f"Failed to open database at '{input_file}'")
             return
         attrs = {
             "xmlns:xs": "http://www.w3.org/2001/XMLSchema",
-            "path": path,
+            "path": input_file,
         }
-        sys.stdout.reconfigure(encoding='utf-8')
-        with Xml(sys.stdout, "SDB", 0, attrs, xmltag=True) as node:
+        with Xml(output_stream, "SDB", 0, attrs, xmltag=True) as node:
             dump_tag(node, db.root())
-
-def main():
-    for arg in sys.argv[1:]:
-        dump_db(arg)
-
-if __name__ == "__main__":
-    main()

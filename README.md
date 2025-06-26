@@ -14,11 +14,35 @@ A tool for converting Microsoft Application Compatibility Database (SDB) files t
 
 ## Usage
 
+### With uv (recommended)
+
+1. [Install uv](https://docs.astral.sh/uv/getting-started/installation/).
+2. Use `uvx sdb2xml` to run this tool, or `uv tool install sdb2xml` to install it.
+
+For help, run:
 ```bash
-uvx sdb2xml input.sdb
+uvx sdb2xml --help
+```
+or when installed:
+```bash
+sdb2xml --help
 ```
 
-- `input.sdb`: Path to the SDB file.
+### With pip
+
+Install this tool using `pip`:
+```bash
+pip install sdb2xml
+```
+
+For help, run:
+```bash
+sdb2xml --help
+```
+You can also use:
+```bash
+python -m sdb2xml --help
+```
 
 ## Contributing
 
