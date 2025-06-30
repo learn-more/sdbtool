@@ -1,4 +1,4 @@
-from sdb2xml import convert
+from sdbtool import convert
 import click
 
 @click.command()

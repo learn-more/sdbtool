@@ -1,5 +1,5 @@
 from click.testing import CliRunner
-from sdb2xml.cli import cli
+from sdbtool.cli import cli
 
 
 def test_version():

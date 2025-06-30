@@ -1,5 +1,5 @@
 '''
-PROJECT:     sdb2xml
+PROJECT:     sdbtool
 LICENSE:     MIT (https://spdx.org/licenses/MIT)
 PURPOSE:     interface to the AppHelp API for reading SDB files.
 COPYRIGHT:   Copyright 2025 Mark Jansen <mark.jansen@reactos.org>

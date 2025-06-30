@@ -90,8 +90,8 @@ wheels = [
 ]
 
 [[package]]
-name = "sdb2xml"
-version = "0.2.0"
+name = "sdbtool"
+version = "0.3.0"
 source = { editable = "." }
 dependencies = [
     { name = "click" },

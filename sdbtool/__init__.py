@@ -1,10 +1,10 @@
 '''
-PROJECT:     sdb2xml
+PROJECT:     sdbtool
 LICENSE:     MIT (https://spdx.org/licenses/MIT)
-PURPOSE:     Entrypoint of the sdb2xml tool, which converts SDB files to XML format.
+PURPOSE:     Entrypoint of the sdbtool tool, which converts SDB files to XML format.
 COPYRIGHT:   Copyright 2025 Mark Jansen <mark.jansen@reactos.org>
 '''
-import sdb2xml.apphelp as apphelp
+import sdbtool.apphelp as apphelp
 from base64 import b64encode
 from xml.sax.saxutils import escape
 
@@ -94,7 +94,7 @@ def dump_tag(node, tag):
     if tag.type == apphelp.TAG_TYPE_NULL:
         node.close()
     elif tag.type == apphelp.TAG_TYPE_BYTE:
-        node.write("<!-- UNHANDLED BYTE TAG, please report this at https://github.com/learn-more/sdb2xml -->")
+        node.write("<!-- UNHANDLED BYTE TAG, please report this at https://github.com/learn-more/sdbtool -->")
     elif tag.type == apphelp.TAG_TYPE_WORD:
         val = tag.as_word()
         node.write(f"{val}")

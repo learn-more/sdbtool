@@ -1,6 +1,6 @@
 [project]
-name = "sdb2xml"
-version = "0.2.0"
+name = "sdbtool"
+version = "0.3.0"
 description = "Dump SDB file to xml using apphelp.dll"
 readme = "README.md"
 license = "MIT"
@@ -11,7 +11,7 @@ requires-python = ">=3.10"
 dependencies = [
     "click>=8.2.1",
 ]
-keywords = ["sdb", "sdb2xml", "shim", "apphelp", "appcompat", "shimeng"]
+keywords = ["sdb", "sdbtool", "sdb2xml", "shim", "apphelp", "appcompat", "shimeng"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Environment :: Console",
@@ -21,14 +21,14 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://pypi.org/project/sdb2xml/"
-Changelog = "https://github.com/learn-more/sdb2xml/releases"
-Issues = "https://github.com/learn-more/sdb2xml/issues"
-CI = "https://github.com/learn-more/sdb2xml/actions"
-Repository = "https://github.com/learn-more/sdb2xml"
+Homepage = "https://pypi.org/project/sdbtool/"
+Changelog = "https://github.com/learn-more/sdbtool/releases"
+Issues = "https://github.com/learn-more/sdbtool/issues"
+CI = "https://github.com/learn-more/sdbtool/actions"
+Repository = "https://github.com/learn-more/sdbtool"
 
 [project.scripts]
-sdb2xml = "sdb2xml.cli:cli"
+sdbtool = "sdbtool.cli:cli"
 
 [build-system]
 requires = ["hatchling"]

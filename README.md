@@ -1,53 +1,51 @@
-# sdb2xml
+# sdbtool
 
 A tool for converting Microsoft Application Compatibility Database (SDB) files to XML format.
 
-## Features
+## Table of Contents
+
+1. [Features](#features)
+1. [Getting Started](#getting-started)
+1. [Contributing](#contributing)
+1. [License](#license)
+
+## Features<a id="features"></a>
 
 - Parses SDB files used by Windows for application compatibility.
 - Converts SDB data into readable XML.
 - Useful for analysis, migration, or documentation.
 
-## Requirements
 
-- Python 3.10+
+## Getting Started<a id="getting-started"></a>
 
-## Usage
+### Installation
 
-### With uv (recommended)
+Sdbtool is available as [`sdbtool`](https://pypi.org/project/sdbtool/) on PyPI.
 
-1. [Install uv](https://docs.astral.sh/uv/getting-started/installation/).
-2. Use `uvx sdb2xml` to run this tool, or `uv tool install sdb2xml` to install it.
+Invoke sdbtool directly with [`uvx`](https://docs.astral.sh/uv/):
 
-For help, run:
-```bash
-uvx sdb2xml --help
-```
-or when installed:
-```bash
-sdb2xml --help
+```shell
+uvx sdbtool your.sdb                    # Convert the file 'your.sdb' to xml, and print it to the console
+uvx sdbtool your.sdb --output your.xml  # Convert the file 'your.sdb' to xml, and write it to 'your.xml'
 ```
 
-### With pip
+Or install sdbtool with `uv` (recommended), `pip`, or `pipx`:
 
-Install this tool using `pip`:
-```bash
-pip install sdb2xml
+```shell
+# With uv.
+uv tool install sdbtool@latest  # Install sdbtool globally.
+
+# With pip.
+pip install sdbtool
+
+# With pipx.
+pipx install sdbtool
 ```
 
-For help, run:
-```bash
-sdb2xml --help
-```
-You can also use:
-```bash
-python -m sdb2xml --help
-```
-
-## Contributing
+## Contributing<a id="contributing"></a>
 
 Contributions are welcome! Please open issues or submit pull requests.
 
-## License
+## License<a id="license"></a>
 
 This project is licensed under the MIT License.
