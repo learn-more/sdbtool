@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<SDB xmlns:xs="http://www.w3.org/2001/XMLSchema" file="shim_db.sdb">
+  <DATABASE>
+    <TIME type="xs:unsignedLong">131417383762810375</TIME>
+    <COMPILER_VERSION type="xs:string">2.1.0.3</COMPILER_VERSION>
+    <NAME type="xs:string">ICS</NAME>
+    <GUEST_TARGET_PLATFORM type="xs:unsignedInt">1</GUEST_TARGET_PLATFORM>
+    <DATABASE_ID type="xs:base64Binary">63XdeZjAV0eZZZ6DxMqdpA==</DATABASE_ID>
+    <LIBRARY></LIBRARY>
+  </DATABASE>
+  <STRINGTABLE>
+    <STRINGTABLE_ITEM type="xs:string">2.1.0.3</STRINGTABLE_ITEM>
+    <STRINGTABLE_ITEM type="xs:string">ICS</STRINGTABLE_ITEM>
+  </STRINGTABLE>
+</SDB>

@@ -1,4 +1,4 @@
-from sdbtool import convert
+from sdbtool import sdb2xml
 import click
 
 @click.command()
@@ -11,4 +11,4 @@ import click
     help="Path to the output XML file, or '-' for stdout.",
 )
 def cli(input_file, output):
-    convert(input_file, output)
+    sdb2xml(input_file, output)

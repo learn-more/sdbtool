@@ -7,6 +7,7 @@ COPYRIGHT:   Copyright 2025 Mark Jansen <mark.jansen@reactos.org>
 import sdbtool.apphelp as apphelp
 from base64 import b64encode
 from xml.sax.saxutils import escape
+from pathlib import Path
 
 INDENT_DEPTH = 2
 
@@ -118,14 +119,14 @@ def dump_tag(node, tag):
         raise ValueError(f"Unknown tag type: {tag.type} for tag {tag.name}")
 
 
-def convert(input_file: str, output_stream):
+def sdb2xml(input_file: str, output_stream):
     with apphelp.SdbDatabase(input_file, apphelp.PathType.DOS_PATH) as db:
         if not db:
             print(f"Failed to open database at '{input_file}'")
             return
         attrs = {
             "xmlns:xs": "http://www.w3.org/2001/XMLSchema",
-            "path": input_file,
+            "file": Path(input_file).name,
         }
         with Xml(output_stream, "SDB", 0, attrs, xmltag=True) as node:
             dump_tag(node, db.root())
