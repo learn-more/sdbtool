@@ -12,6 +12,7 @@ from sdbtool.apphelp import (
     TagType,
     Tag,
     tag_to_string,
+    SHIMDB_INDEX_UNIQUE_KEY
 )
 from sdbtool.xml import XmlWriter
 from base64 import b64encode
@@ -84,7 +85,14 @@ class XmlTagVisitor(TagVisitor):
             if tag.name in ("INDEX_TAG", "INDEX_KEY"):
                 self.writer.write_comment(f"{tag_to_string(value)}")
         elif tag.type == TagType.DWORD:
-            self.writer.write(f"{tag.as_dword()}")
+            value = tag.as_dword()
+            self.writer.write(f"{value}")
+            if tag.name in ("INDEX_FLAGS",):
+                comment = ""
+                if value & SHIMDB_INDEX_UNIQUE_KEY:
+                    comment += "1 = SHIMDB_INDEX_UNIQUE_KEY"  # https://learn.microsoft.com/en-us/windows/win32/devnotes/sdbgetindex
+                if comment:
+                    self.writer.write_comment(comment)
         elif tag.type == TagType.QWORD:
             self.writer.write(f"{tag.as_qword()}")
         elif tag.type in (TagType.STRINGREF, TagType.STRING):

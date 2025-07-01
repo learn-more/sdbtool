@@ -15,9 +15,10 @@ class PathType(IntEnum):
     NT_PATH = 1
 
 
+TAG_NULL = 0x0
 TAGID_NULL = 0x0
 TAGID_ROOT = 0x0
-_TAGID_ROOT = 12
+SHIMDB_INDEX_UNIQUE_KEY = 0x1
 
 
 class TagType(IntEnum):
@@ -33,9 +34,6 @@ class TagType(IntEnum):
     STRING = 0x8000
     BINARY = 0x9000
     MASK = 0xF000
-
-
-TAG_NULL = 0x0
 
 
 def _get_tag_type(tag: int) -> TagType:
