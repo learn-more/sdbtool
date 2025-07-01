@@ -1,3 +1,9 @@
+"""
+PROJECT:     sdbtool
+LICENSE:     MIT (https://spdx.org/licenses/MIT)
+PURPOSE:     Entrypoint of the sdbtool tool
+COPYRIGHT:   Copyright 2025 Mark Jansen <mark.jansen@reactos.org>
+"""
 from sdbtool import sdb2xml
 import click
 
@@ -11,4 +17,4 @@ import click
     help="Path to the output XML file, or '-' for stdout.",
 )
 def cli(input_file, output):
-    sdb2xml(input_file, output)
+    sdb2xml.convert(input_file, output)
