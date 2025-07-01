@@ -10,39 +10,39 @@
     <INDEX>
       <INDEX_TAG type="xs:unsignedShort">28679<!-- EXE --></INDEX_TAG>
       <INDEX_KEY type="xs:unsignedShort">24587<!-- WILDCARD_NAME --></INDEX_KEY>
-      <INDEX_BITS type="xs:base64Binary" />
+      <INDEX_BITS type="xs:base64Binary"></INDEX_BITS>
     </INDEX>
     <INDEX>
       <INDEX_TAG type="xs:unsignedShort">28679<!-- EXE --></INDEX_TAG>
       <INDEX_KEY type="xs:unsignedShort">24608<!-- 16BIT_MODULE_NAME --></INDEX_KEY>
-      <INDEX_BITS type="xs:base64Binary" />
+      <INDEX_BITS type="xs:base64Binary"></INDEX_BITS>
     </INDEX>
     <INDEX>
       <INDEX_TAG type="xs:unsignedShort">28676<!-- SHIM --></INDEX_TAG>
       <INDEX_KEY type="xs:unsignedShort">24577<!-- NAME --></INDEX_KEY>
-      <INDEX_BITS type="xs:base64Binary" />
+      <INDEX_BITS type="xs:base64Binary"></INDEX_BITS>
     </INDEX>
     <INDEX>
       <INDEX_TAG type="xs:unsignedShort">28685<!-- APPHELP --></INDEX_TAG>
       <INDEX_KEY type="xs:unsignedShort">16405<!-- HTMLHELPID --></INDEX_KEY>
-      <INDEX_BITS type="xs:base64Binary" />
+      <INDEX_BITS type="xs:base64Binary"></INDEX_BITS>
     </INDEX>
     <INDEX>
       <INDEX_TAG type="xs:unsignedShort">28688<!-- MSI_TRANSFORM --></INDEX_TAG>
       <INDEX_KEY type="xs:unsignedShort">24577<!-- NAME --></INDEX_KEY>
       <INDEX_FLAGS type="xs:unsignedInt">1</INDEX_FLAGS>
-      <INDEX_BITS type="xs:base64Binary" />
+      <INDEX_BITS type="xs:base64Binary"></INDEX_BITS>
     </INDEX>
     <INDEX>
       <INDEX_TAG type="xs:unsignedShort">28690<!-- MSI_PACKAGE --></INDEX_TAG>
       <INDEX_KEY type="xs:unsignedShort">36870<!-- MSI_PACKAGE_ID --></INDEX_KEY>
-      <INDEX_BITS type="xs:base64Binary" />
+      <INDEX_BITS type="xs:base64Binary"></INDEX_BITS>
     </INDEX>
     <INDEX>
       <INDEX_TAG type="xs:unsignedShort">28690<!-- MSI_PACKAGE --></INDEX_TAG>
       <INDEX_KEY type="xs:unsignedShort">36868<!-- EXE_ID --></INDEX_KEY>
       <INDEX_FLAGS type="xs:unsignedInt">1</INDEX_FLAGS>
-      <INDEX_BITS type="xs:base64Binary" />
+      <INDEX_BITS type="xs:base64Binary"></INDEX_BITS>
     </INDEX>
     <INDEX>
       <INDEX_TAG type="xs:unsignedShort">28679<!-- EXE --></INDEX_TAG>
