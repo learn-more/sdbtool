@@ -46,6 +46,19 @@ def tag_to_string(tag: int) -> str:
     return apphelp.SdbTagToString(tag)
 
 
+def guid_to_string(guid: bytes) -> str:
+    """Converts a GUID (16-byte binary) to its string representation."""
+    if len(guid) != 16:
+        raise ValueError("GUID must be 16 bytes long")
+    return (
+        f"{guid[3]:02x}{guid[2]:02x}{guid[1]:02x}{guid[0]:02x}-"
+        f"{guid[5]:02x}{guid[4]:02x}-"
+        f"{guid[7]:02x}{guid[6]:02x}-"
+        f"{guid[8]:02x}{guid[9]:02x}-"
+        f"{guid[10]:02x}{guid[11]:02x}{guid[12]:02x}{guid[13]:02x}{guid[14]:02x}{guid[15]:02x}"
+    )
+
+
 class Tag:
     def __init__(self, db: "SdbDatabase", tag_id: int):
         self.db = db

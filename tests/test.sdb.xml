@@ -151,14 +151,14 @@
     <COMPILER_VERSION type="xs:string">2.1.0.3</COMPILER_VERSION>
     <NAME type="xs:string">resart</NAME>
     <GUEST_TARGET_PLATFORM type="xs:unsignedInt">1</GUEST_TARGET_PLATFORM>
-    <DATABASE_ID type="xs:base64Binary">H4JT2UeD20+z1sEPbtXBRA==</DATABASE_ID>
+    <DATABASE_ID type="xs:base64Binary">H4JT2UeD20+z1sEPbtXBRA==<!-- {d953821f-8347-4fdb-b3d6-c10f6ed5c144} --></DATABASE_ID>
     <LIBRARY></LIBRARY>
     <EXE>
       <NAME type="xs:string">IdleMaster.exe</NAME>
       <APP_NAME type="xs:string">asd</APP_NAME>
       <VENDOR type="xs:string">sd</VENDOR>
-      <EXE_ID type="xs:base64Binary">1/nRa4y7B0i0M4pNJtKLEQ==</EXE_ID>
-      <APP_ID type="xs:base64Binary">TlLeCgO3hECeu+Dlwx92tw==</APP_ID>
+      <EXE_ID type="xs:base64Binary">1/nRa4y7B0i0M4pNJtKLEQ==<!-- {6bd1f9d7-bb8c-4807-b433-8a4d26d28b11} --></EXE_ID>
+      <APP_ID type="xs:base64Binary">TlLeCgO3hECeu+Dlwx92tw==<!-- {0ade524e-b703-4084-9ebb-e0e5c31f76b7} --></APP_ID>
       <MATCHING_FILE>
         <NAME type="xs:string">*</NAME>
         <PRODUCT_NAME type="xs:string">IdleMaster</PRODUCT_NAME>
@@ -175,8 +175,8 @@
       <NAME type="xs:string">w9xpopen.exe</NAME>
       <APP_NAME type="xs:string">aaa</APP_NAME>
       <VENDOR type="xs:string">aaaa</VENDOR>
-      <EXE_ID type="xs:base64Binary">CSgqS/LRaEWCL1nTqTWo8A==</EXE_ID>
-      <APP_ID type="xs:base64Binary">XhDI7xEuwkyLr8yvAsF/Tg==</APP_ID>
+      <EXE_ID type="xs:base64Binary">CSgqS/LRaEWCL1nTqTWo8A==<!-- {4b2a2809-d1f2-4568-822f-59d3a935a8f0} --></EXE_ID>
+      <APP_ID type="xs:base64Binary">XhDI7xEuwkyLr8yvAsF/Tg==<!-- {efc8105e-2e11-4cc2-8baf-ccaf02c17f4e} --></APP_ID>
       <MATCHING_FILE>
         <NAME type="xs:string">*</NAME>
         <SIZE type="xs:unsignedInt">111104</SIZE>

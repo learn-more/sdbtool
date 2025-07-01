@@ -4,8 +4,10 @@ LICENSE:     MIT (https://spdx.org/licenses/MIT)
 PURPOSE:     Entrypoint of the sdbtool tool
 COPYRIGHT:   Copyright 2025 Mark Jansen <mark.jansen@reactos.org>
 """
+
 from sdbtool import sdb2xml
 import click
+
 
 @click.command()
 @click.version_option()

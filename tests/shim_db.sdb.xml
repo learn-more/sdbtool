@@ -5,7 +5,7 @@
     <COMPILER_VERSION type="xs:string">2.1.0.3</COMPILER_VERSION>
     <NAME type="xs:string">ICS</NAME>
     <GUEST_TARGET_PLATFORM type="xs:unsignedInt">1</GUEST_TARGET_PLATFORM>
-    <DATABASE_ID type="xs:base64Binary">63XdeZjAV0eZZZ6DxMqdpA==</DATABASE_ID>
+    <DATABASE_ID type="xs:base64Binary">63XdeZjAV0eZZZ6DxMqdpA==<!-- {79dd75eb-c098-4757-9965-9e83c4ca9da4} --></DATABASE_ID>
     <LIBRARY></LIBRARY>
   </DATABASE>
   <STRINGTABLE>

@@ -12,6 +12,7 @@ from sdbtool.apphelp import (
     TagType,
     Tag,
     tag_to_string,
+    guid_to_string,
     SHIMDB_INDEX_UNIQUE_KEY
 )
 from sdbtool.xml import XmlWriter
@@ -104,6 +105,9 @@ class XmlTagVisitor(TagVisitor):
             if data:
                 base64_data = b64encode(data).decode("utf-8")
                 self.writer.write(base64_data)
+                if tag.name.endswith("_ID") and len(data) == 16:
+                    guid_str = guid_to_string(data)
+                    self.writer.write_comment(f"{{{guid_str}}}")
         else:
             raise ValueError(f"Unknown tag type: {tag.type} for tag {tag.name}")
 

@@ -55,13 +55,13 @@
     <COMPILER_VERSION type="xs:string">2.1.0.3</COMPILER_VERSION>
     <NAME type="xs:string">Anno 1602 Compatibility fix</NAME>
     <GUEST_TARGET_PLATFORM type="xs:unsignedInt">1</GUEST_TARGET_PLATFORM>
-    <DATABASE_ID type="xs:base64Binary">Wy8It8yzrESgMGnvPjUiXQ==</DATABASE_ID>
+    <DATABASE_ID type="xs:base64Binary">Wy8It8yzrESgMGnvPjUiXQ==<!-- {b7082f5b-b3cc-44ac-a030-69ef3e35225d} --></DATABASE_ID>
     <LIBRARY></LIBRARY>
     <EXE>
       <NAME type="xs:string">1602.exe</NAME>
       <APP_NAME type="xs:string">Anno 1602 Compatibility fix</APP_NAME>
       <VENDOR type="xs:string">&lt;Unknown&gt;</VENDOR>
-      <EXE_ID type="xs:base64Binary">8GX0p3NW+0qNTglTtaRdMQ==</EXE_ID>
+      <EXE_ID type="xs:base64Binary">8GX0p3NW+0qNTglTtaRdMQ==<!-- {a7f465f0-5673-4afb-8d4e-0953b5a45d31} --></EXE_ID>
       <MATCHING_FILE>
         <NAME type="xs:string">*</NAME>
       </MATCHING_FILE>
@@ -76,7 +76,7 @@
       <NAME type="xs:string">1602Edit.exe</NAME>
       <APP_NAME type="xs:string">Anno 1602 Compatibility fix</APP_NAME>
       <VENDOR type="xs:string">GOG.com</VENDOR>
-      <EXE_ID type="xs:base64Binary">MFe9fNf5Sk+QiH85fqKg6A==</EXE_ID>
+      <EXE_ID type="xs:base64Binary">MFe9fNf5Sk+QiH85fqKg6A==<!-- {7cbd5730-f9d7-4f4a-9088-7f397ea2a0e8} --></EXE_ID>
       <MATCHING_FILE>
         <NAME type="xs:string">*</NAME>
       </MATCHING_FILE>
