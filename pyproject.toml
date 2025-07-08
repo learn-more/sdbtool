@@ -1,6 +1,6 @@
 [project]
 name = "sdbtool"
-version = "0.3.2"
+version = "0.4.0"
 description = "Dump SDB file to xml using apphelp.dll"
 readme = "README.md"
 license = "MIT"
@@ -28,7 +28,8 @@ CI = "https://github.com/learn-more/sdbtool/actions"
 Repository = "https://github.com/learn-more/sdbtool"
 
 [project.scripts]
-sdbtool = "sdbtool.cli:cli"
+sdbtool = "sdbtool.cli:sdbtool_command"
+sdb2xml = "sdbtool.cli:sdb2xml_command"
 
 [build-system]
 requires = ["hatchling"]

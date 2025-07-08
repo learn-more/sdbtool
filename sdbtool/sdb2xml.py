@@ -115,12 +115,10 @@ class XmlTagVisitor(TagVisitor):
 def convert(input_file: str, output_stream):
     with SdbDatabase(input_file, PathType.DOS_PATH) as db:
         if not db:
-            print(f"Failed to open database at '{input_file}'")
-            return
+            raise ValueError(f"Failed to open database at '{input_file}'")
 
         visitor = XmlTagVisitor(output_stream, Path(input_file).name)
         root = db.root()
         if root is None:
-            print(f"No root tag found in database '{input_file}'")
-            return
+            raise ValueError(f"No root tag found in database '{input_file}'")
         root.accept(visitor)

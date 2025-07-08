@@ -1,4 +1,4 @@
-from sdbtool.cli import cli
+from sdbtool.cli import sdbtool_command
 
 if __name__ == "__main__":
-    cli()
+    sdbtool_command()

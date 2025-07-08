@@ -13,6 +13,7 @@ A tool for converting Microsoft Application Compatibility Database (SDB) files t
 
 - Parses SDB files used by Windows for application compatibility.
 - Converts SDB data into readable XML.
+- Dump file attributes in SDB-recognizable format
 - Useful for analysis, migration, or documentation.
 
 
@@ -25,8 +26,9 @@ Sdbtool is available as [`sdbtool`](https://pypi.org/project/sdbtool/) on PyPI.
 Invoke sdbtool directly with [`uvx`](https://docs.astral.sh/uv/):
 
 ```shell
-uvx sdbtool your.sdb                    # Convert the file 'your.sdb' to xml, and print it to the console
-uvx sdbtool your.sdb --output your.xml  # Convert the file 'your.sdb' to xml, and write it to 'your.xml'
+uvx sdbtool sdb2xml your.sdb                    # Convert the file 'your.sdb' to xml, and print it to the console
+uvx sdbtool sdb2xml your.sdb --output your.xml  # Convert the file 'your.sdb' to xml, and write it to 'your.xml'
+uvx sdbtool attributes your.exe                 # Show the file attributes as recognized by apphelp in an XML-friendly format
 ```
 
 Or install sdbtool with `uv` (recommended), `pip`, or `pipx`:

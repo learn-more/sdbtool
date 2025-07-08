@@ -36,7 +36,7 @@ class TagType(IntEnum):
     MASK = 0xF000
 
 
-def _get_tag_type(tag: int) -> TagType:
+def get_tag_type(tag: int) -> TagType:
     """Extracts the type from a tag."""
     return TagType(tag & TagType.MASK)
 
@@ -70,7 +70,7 @@ class Tag:
         else:
             self.tag = apphelp.SdbGetTagFromTagID(self._ensure_db_handle(), tag_id)
             self.name = apphelp.SdbTagToString(self.tag)
-            self.type = _get_tag_type(self.tag)
+            self.type = get_tag_type(self.tag)
 
     def _ensure_db_handle(self) -> c_void_p:
         """Ensures that the database handle is initialized."""

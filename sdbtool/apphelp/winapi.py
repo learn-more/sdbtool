@@ -6,14 +6,19 @@ COPYRIGHT:   Copyright 2025 Mark Jansen <mark.jansen@reactos.org>
 """
 
 from ctypes import (
+    byref,
+    create_unicode_buffer,
     windll,
     c_void_p,
     c_uint16,
     c_uint32,
     c_wchar_p,
     POINTER,
+    pointer,
     c_ubyte,
     c_uint64,
+    Structure,
+    Union,
 )
 
 APPHELP = windll.apphelp
@@ -64,6 +69,86 @@ APPHELP.SdbReadBinaryTag.restype = c_uint32
 # LPWSTR WINAPI SdbGetStringTagPtr(PDB pdb, TAGID tagid);
 APPHELP.SdbGetStringTagPtr.argtypes = [c_void_p, c_uint32]
 APPHELP.SdbGetStringTagPtr.restype = c_wchar_p
+
+
+# typedef struct tagATTRINFO {
+#   TAG   tAttrID;
+#   DWORD dwFlags;
+#   union {
+#     ULONGLONG ullAttr;
+#     DWORD     dwAttr;
+#     TCHAR     *lpAttr;
+#   };
+# } ATTRINFO, *PATTRINFO;
+
+
+class _U(Union):
+    _fields_ = [("ullAttr", c_uint64), ("dwAttr", c_uint32), ("lpAttr", c_wchar_p)]
+
+
+class ATTRINFO(Structure):
+    _anonymous_ = ("_u",)
+    _fields_ = [
+        ("tAttrID", c_uint16),  # TAG
+        ("dwFlags", c_uint32),
+        ("_u", _U),  # Union for ullAttr, dwAttr, lpAttr
+    ]
+
+
+ATTRIBUTE_AVAILABLE = 0x00000001  # Attribute is available
+
+
+# BOOL WINAPI SdbFormatAttribute(
+#   _In_  PATTRINFO pAttrInfo,
+#   _Out_ LPTSTR    pchBuffer,
+#   _In_  DWORD     dwBufferSize
+# );
+APPHELP.SdbFormatAttribute.argtypes = [POINTER(ATTRINFO), c_wchar_p, c_uint32]
+APPHELP.SdbFormatAttribute.restype = c_uint32
+
+# BOOL WINAPI SdbGetFileAttributes(
+#   _In_  LPCTSTR   lpwszFileName,
+#   _Out_ PATTRINFO *ppAttrInfo,
+#   _Out_ LPDWORD   lpdwAttrCount
+# );
+APPHELP.SdbGetFileAttributes.argtypes = [
+    c_wchar_p,
+    POINTER(POINTER(ATTRINFO)),
+    POINTER(c_uint32),
+]
+APPHELP.SdbGetFileAttributes.restype = c_uint32
+
+# BOOL WINAPI SdbFreeFileAttributes(
+#   _In_ PATTRINFO pFileAttributes
+# );
+APPHELP.SdbFreeFileAttributes.argtypes = [c_void_p]
+APPHELP.SdbFreeFileAttributes.restype = c_uint32
+
+
+# BOOL WINAPI SdbGetMatchingExe(
+#   _In_opt_ HSDB            hSDB,
+#   _In_     LPCTSTR         szPath,
+#   _In_opt_ LPCTSTR         szModuleName,
+#   _In_opt_ LPCTSTR         pszEnvironment,
+#   _In_     DWORD           dwFlags,
+#   _Out_    PSDBQUERYRESULT pQueryResult
+# );
+APPHELP.SdbGetMatchingExe.argtypes = [
+    c_void_p,
+    c_wchar_p,
+    c_wchar_p,
+    c_wchar_p,
+    c_uint32,
+    POINTER(c_void_p),
+]
+APPHELP.SdbGetMatchingExe.restype = c_uint32
+
+# void WINAPI SdbReleaseMatchingExe(
+#   _In_ HSDB   hSDB,
+#   _In_ TAGREF trExe
+# );
+APPHELP.SdbReleaseMatchingExe.argtypes = [c_void_p, c_uint32]
+APPHELP.SdbReleaseMatchingExe.restype = None
 
 
 def SdbOpenDatabase(path: str, path_type: int) -> c_void_p:
@@ -126,3 +211,31 @@ def SdbReadBinaryTag(db: c_void_p, tag_id: int) -> bytes:
 def SdbGetStringTagPtr(db: c_void_p, tag_id: int) -> str:
     """Get the string pointer of the specified tag."""
     return APPHELP.SdbGetStringTagPtr(db, tag_id)
+
+
+def GetFileAttributes(file_name: str):
+    """Get file attributes for the specified file."""
+    attr_info = POINTER(ATTRINFO)()
+    attr_count = c_uint32()
+    result = APPHELP.SdbGetFileAttributes(
+        file_name, byref(attr_info), byref(attr_count)
+    )
+    if result == 0:
+        raise ValueError(f"Failed to get file attributes for '{file_name}'")
+    return attr_info, attr_count
+
+
+def SdbFormatAttribute(attr_info: ATTRINFO) -> str:
+    """Format the attribute information into a string."""
+    buffer_size = 1024 * 2
+    buffer = create_unicode_buffer(buffer_size)
+    result = APPHELP.SdbFormatAttribute(pointer(attr_info), buffer, buffer_size)
+    if result == 0:
+        name = SdbTagToString(attr_info.tAttrID)
+        raise ValueError(f"Failed to format attribute ({name})")
+    return buffer.value if buffer.value else ""
+
+
+def SdbFreeFileAttributes(attr_info):
+    """Free the file attributes structure."""
+    APPHELP.SdbFreeFileAttributes(attr_info)
