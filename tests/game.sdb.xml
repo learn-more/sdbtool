@@ -4,7 +4,7 @@
     <INDEX>
       <INDEX_TAG type="xs:unsignedShort">28679<!-- EXE --></INDEX_TAG>
       <INDEX_KEY type="xs:unsignedShort">24577<!-- NAME --></INDEX_KEY>
-      <INDEX_FLAGS type="xs:unsignedInt">1<!-- 1 = SHIMDB_INDEX_UNIQUE_KEY --></INDEX_FLAGS>
+      <INDEX_FLAGS type="xs:unsignedInt">1<!-- SHIMDB_INDEX_UNIQUE_KEY --></INDEX_FLAGS>
       <INDEX_BITS type="xs:base64Binary">RVhFLjIwNjFGAQAAVElERTIwNjGYAQAA</INDEX_BITS>
     </INDEX>
     <INDEX>
@@ -30,7 +30,7 @@
     <INDEX>
       <INDEX_TAG type="xs:unsignedShort">28688<!-- MSI_TRANSFORM --></INDEX_TAG>
       <INDEX_KEY type="xs:unsignedShort">24577<!-- NAME --></INDEX_KEY>
-      <INDEX_FLAGS type="xs:unsignedInt">1<!-- 1 = SHIMDB_INDEX_UNIQUE_KEY --></INDEX_FLAGS>
+      <INDEX_FLAGS type="xs:unsignedInt">1<!-- SHIMDB_INDEX_UNIQUE_KEY --></INDEX_FLAGS>
       <INDEX_BITS type="xs:base64Binary"></INDEX_BITS>
     </INDEX>
     <INDEX>
@@ -41,7 +41,7 @@
     <INDEX>
       <INDEX_TAG type="xs:unsignedShort">28690<!-- MSI_PACKAGE --></INDEX_TAG>
       <INDEX_KEY type="xs:unsignedShort">36868<!-- EXE_ID --></INDEX_KEY>
-      <INDEX_FLAGS type="xs:unsignedInt">1<!-- 1 = SHIMDB_INDEX_UNIQUE_KEY --></INDEX_FLAGS>
+      <INDEX_FLAGS type="xs:unsignedInt">1<!-- SHIMDB_INDEX_UNIQUE_KEY --></INDEX_FLAGS>
       <INDEX_BITS type="xs:base64Binary"></INDEX_BITS>
     </INDEX>
     <INDEX>
@@ -54,7 +54,7 @@
     <TIME type="xs:unsignedLong">131111577709124608</TIME>
     <COMPILER_VERSION type="xs:string">2.1.0.3</COMPILER_VERSION>
     <NAME type="xs:string">Anno 1602 Compatibility fix</NAME>
-    <GUEST_TARGET_PLATFORM type="xs:unsignedInt">1</GUEST_TARGET_PLATFORM>
+    <GUEST_TARGET_PLATFORM type="xs:unsignedInt">1<!-- X86 --></GUEST_TARGET_PLATFORM>
     <DATABASE_ID type="xs:base64Binary">Wy8It8yzrESgMGnvPjUiXQ==<!-- {b7082f5b-b3cc-44ac-a030-69ef3e35225d} --></DATABASE_ID>
     <LIBRARY></LIBRARY>
     <EXE>

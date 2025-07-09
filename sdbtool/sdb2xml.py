@@ -11,12 +11,9 @@ from sdbtool.apphelp import (
     TagVisitor,
     TagType,
     Tag,
-    tag_to_string,
-    guid_to_string,
-    SHIMDB_INDEX_UNIQUE_KEY
+    tag_value_to_string,
 )
 from sdbtool.xml import XmlWriter
-from base64 import b64encode
 from pathlib import Path
 
 
@@ -68,48 +65,18 @@ class XmlTagVisitor(TagVisitor):
             if typename is not None:
                 attrs["type"] = typename
             else:
-                raise ValueError(f"Unknown tag type: {tag.type} for tag {tag.name}")
+                raise ValueError(f"Unknown xml tag type: {tag.type} for tag {tag.name}")
 
         self.writer.open(tag.name, attrs)
         self._write_tag_value(tag)
         self.writer.close(tag.name)
 
     def _write_tag_value(self, tag: Tag):
-        """Write the value of a tag based on its type."""
-        if tag.type == TagType.BYTE:
-            self.writer.write_comment(
-                "UNHANDLED BYTE TAG, please report this at https://github.com/learn-more/sdbtool"
-            )
-        elif tag.type == TagType.WORD:
-            value = tag.as_word()
-            self.writer.write(f"{value}")
-            if tag.name in ("INDEX_TAG", "INDEX_KEY"):
-                self.writer.write_comment(f"{tag_to_string(value)}")
-        elif tag.type == TagType.DWORD:
-            value = tag.as_dword()
-            self.writer.write(f"{value}")
-            if tag.name in ("INDEX_FLAGS",):
-                comment = ""
-                if value & SHIMDB_INDEX_UNIQUE_KEY:
-                    comment += "1 = SHIMDB_INDEX_UNIQUE_KEY"  # https://learn.microsoft.com/en-us/windows/win32/devnotes/sdbgetindex
-                if comment:
-                    self.writer.write_comment(comment)
-        elif tag.type == TagType.QWORD:
-            self.writer.write(f"{tag.as_qword()}")
-        elif tag.type in (TagType.STRINGREF, TagType.STRING):
-            val = tag.as_string()
-            if val:
-                self.writer.write(f"{val}")
-        elif tag.type == TagType.BINARY:
-            data = tag.as_bytes()
-            if data:
-                base64_data = b64encode(data).decode("utf-8")
-                self.writer.write(base64_data)
-                if tag.name.endswith("_ID") and len(data) == 16:
-                    guid_str = guid_to_string(data)
-                    self.writer.write_comment(f"{{{guid_str}}}")
-        else:
-            raise ValueError(f"Unknown tag type: {tag.type} for tag {tag.name}")
+        value, comment = tag_value_to_string(tag)
+        if value is not None:
+            self.writer.write(value)
+        if comment is not None:
+            self.writer.write_comment(comment)
 
 
 def convert(input_file: str, output_stream):

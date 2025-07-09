@@ -3,7 +3,7 @@
   <DATABASE>
     <TIME type="xs:unsignedLong">131426274470000000</TIME>
     <COMPILER_VERSION type="xs:string">1.5.0.0</COMPILER_VERSION>
-    <GUEST_TARGET_PLATFORM type="xs:unsignedInt">1</GUEST_TARGET_PLATFORM>
+    <GUEST_TARGET_PLATFORM type="xs:unsignedInt">1<!-- X86 --></GUEST_TARGET_PLATFORM>
     <NAME type="xs:string">ReactOS test database</NAME>
     <DATABASE_ID type="xs:base64Binary">eI4fVdqprESiTFqBRTF7xw==<!-- {551f8e78-a9da-44ac-a24c-5a8145317bc7} --></DATABASE_ID>
     <LIBRARY>

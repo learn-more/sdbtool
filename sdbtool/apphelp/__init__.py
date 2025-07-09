@@ -6,8 +6,14 @@ COPYRIGHT:   Copyright 2025 Mark Jansen <mark.jansen@reactos.org>
 """
 
 from ctypes import c_void_p
-from enum import IntEnum
+from enum import IntEnum, IntFlag
+from base64 import b64encode
 import sdbtool.apphelp.winapi as apphelp
+
+
+TAG_NULL = 0x0
+TAGID_NULL = 0x0
+TAGID_ROOT = 0x0
 
 
 class PathType(IntEnum):
@@ -15,25 +21,38 @@ class PathType(IntEnum):
     NT_PATH = 1
 
 
-TAG_NULL = 0x0
-TAGID_NULL = 0x0
-TAGID_ROOT = 0x0
-SHIMDB_INDEX_UNIQUE_KEY = 0x1
+class IndexFlags(IntFlag):
+    SHIMDB_INDEX_UNIQUE_KEY = (
+        0x1  # https://learn.microsoft.com/en-us/windows/win32/devnotes/sdbgetindex
+    )
+    SHIMDB_INDEX_TRAILING_CHARACTERS = 0x2
 
 
 class TagType(IntEnum):
     """Enumeration of tag types."""
 
-    NULL = 0x1000
-    BYTE = 0x2000
-    WORD = 0x3000
-    DWORD = 0x4000
-    QWORD = 0x5000
-    STRINGREF = 0x6000
-    LIST = 0x7000
-    STRING = 0x8000
-    BINARY = 0x9000
-    MASK = 0xF000
+    NULL = 0x1000  # TAG_TYPE_NULL
+    BYTE = 0x2000  # TAG_TYPE_BYTE
+    WORD = 0x3000  # TAG_TYPE_WORD
+    DWORD = 0x4000  # TAG_TYPE_DWORD
+    QWORD = 0x5000  # TAG_TYPE_QWORD
+    STRINGREF = 0x6000  # TAG_TYPE_STRINGREF
+    LIST = 0x7000  # TAG_TYPE_LIST
+    STRING = 0x8000  # TAG_TYPE_STRING
+    BINARY = 0x9000  # TAG_TYPE_BINARY
+    MASK = 0xF000  # TAG_TYPE_MASK
+
+
+class PlatformType(IntFlag):
+    X86 = 0x1
+    AMD64 = 0x2
+    X86_ON_AMD64 = 0x4
+    ARM = 0x8
+    ARM64 = 0x10
+
+
+TAG_OS_PLATFORM = 0x23 | TagType.DWORD  # AKA GUEST_TARGET_PLATFORM
+TAG_RUNTIME_PLATFORM = 0x21 | TagType.DWORD
 
 
 def get_tag_type(tag: int) -> TagType:
@@ -41,9 +60,57 @@ def get_tag_type(tag: int) -> TagType:
     return TagType(tag & TagType.MASK)
 
 
-def tag_to_string(tag: int) -> str:
+def tag_id_to_string(tag: int) -> str:
     """Converts a tag to its string representation."""
     return apphelp.SdbTagToString(tag)
+
+
+def _value_to_flags(value: int, flags: type[IntFlag]) -> str:
+    """Converts a value to a string representation of its flags."""
+    values = []
+    for flag in flags:
+        if value & flag:
+            values.append(flag.name)
+            value &= ~flag
+    if value != 0:
+        values.append(f"{value:#x}")
+    return " | ".join(values) if values else "0x0"
+
+
+def tag_value_to_string(tag: "Tag") -> tuple[str | None, str | None]:
+    if tag.type == TagType.BYTE:
+        return (
+            None,
+            "UNHANDLED BYTE TAG, please report this at https://github.com/learn-more/sdbtool",
+        )
+    elif tag.type == TagType.WORD:
+        value = tag.read_word()
+        if tag.name in ("INDEX_TAG", "INDEX_KEY"):
+            return f"{value}", f"{tag_id_to_string(value)}"
+        return f"{value}", None
+    elif tag.type == TagType.DWORD:
+        value = tag.read_dword()
+        comment = None
+        if tag.name in ("INDEX_FLAGS",):
+            comment = _value_to_flags(value, IndexFlags)
+        elif tag.tag in (TAG_OS_PLATFORM, TAG_RUNTIME_PLATFORM):
+            comment = _value_to_flags(value, PlatformType)
+        return f"{value}", comment
+    elif tag.type == TagType.QWORD:
+        return f"{tag.read_qword()}", None
+    elif tag.type in (TagType.STRINGREF, TagType.STRING):
+        val = tag.read_string()
+        return val, None
+    elif tag.type == TagType.BINARY:
+        data = tag.read_bytes()
+        if data:
+            base64_data = b64encode(data).decode("utf-8")
+            if tag.name.endswith("_ID") and len(data) == 16:
+                guid_str = guid_to_string(data)
+                return base64_data, f"{{{guid_str}}}"
+            return base64_data, None
+        return "", None
+    raise ValueError(f"Unknown tag type: {tag.type} for tag {tag.name}")
 
 
 def guid_to_string(guid: bytes) -> str:
@@ -87,31 +154,31 @@ class Tag:
                 self._ensure_db_handle(), self.tag_id, child
             )
 
-    def as_word(self, default: int = 0) -> int:
+    def read_word(self, default: int = 0) -> int:
         """Returns the tag value as a word (16-bit integer)."""
         if self.type != TagType.WORD:
             raise ValueError(f"Tag {self.name} is not a WORD type")
         return apphelp.SdbReadWORDTag(self._ensure_db_handle(), self.tag_id, default)
 
-    def as_dword(self, default: int = 0) -> int:
+    def read_dword(self, default: int = 0) -> int:
         """Returns the tag value as a dword (32-bit integer)."""
         if self.type != TagType.DWORD:
             raise ValueError(f"Tag {self.name} is not a DWORD type")
         return apphelp.SdbReadDWORDTag(self._ensure_db_handle(), self.tag_id, default)
 
-    def as_qword(self, default: int = 0) -> int:
+    def read_qword(self, default: int = 0) -> int:
         """Returns the tag value as a qword (64-bit integer)."""
         if self.type != TagType.QWORD:
             raise ValueError(f"Tag {self.name} is not a QWORD type")
         return apphelp.SdbReadQWORDTag(self._ensure_db_handle(), self.tag_id, default)
 
-    def as_bytes(self) -> bytes:
+    def read_bytes(self) -> bytes:
         """Returns the tag value as bytes."""
         if self.type != TagType.BINARY:
             raise ValueError(f"Tag {self.name} is not a BINARY type")
         return apphelp.SdbReadBinaryTag(self._ensure_db_handle(), self.tag_id)
 
-    def as_string(self) -> str:
+    def read_string(self) -> str:
         """Returns the tag value as a string."""
         if self.type not in (TagType.STRING, TagType.STRINGREF):
             raise ValueError(f"Tag {self.name} is not a STRING or STRINGREF type")
