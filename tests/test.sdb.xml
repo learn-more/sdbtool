@@ -147,7 +147,7 @@
     </INDEX>
   </INDEXES>
   <DATABASE>
-    <TIME type="xs:unsignedLong">131560831927601799</TIME>
+    <TIME type="xs:unsignedLong">131560831927601799<!-- 2017-11-25T11:33:12.7601799Z --></TIME>
     <COMPILER_VERSION type="xs:string">2.1.0.3</COMPILER_VERSION>
     <NAME type="xs:string">resart</NAME>
     <GUEST_TARGET_PLATFORM type="xs:unsignedInt">1<!-- X86 --></GUEST_TARGET_PLATFORM>

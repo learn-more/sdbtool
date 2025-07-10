@@ -9,6 +9,7 @@ from ctypes import c_void_p
 from enum import IntEnum, IntFlag
 from base64 import b64encode
 import sdbtool.apphelp.winapi as apphelp
+from datetime import datetime, timezone
 
 
 TAG_NULL = 0x0
@@ -51,8 +52,15 @@ class PlatformType(IntFlag):
     ARM64 = 0x10
 
 
-TAG_OS_PLATFORM = 0x23 | TagType.DWORD  # AKA GUEST_TARGET_PLATFORM
+TAG_INDEX_TAG = 0x802 | TagType.WORD
+TAG_INDEX_KEY = 0x803 | TagType.WORD
+
+
+TAG_INDEX_FLAGS = 0x16 | TagType.DWORD
 TAG_RUNTIME_PLATFORM = 0x21 | TagType.DWORD
+TAG_OS_PLATFORM = 0x23 | TagType.DWORD  # AKA GUEST_TARGET_PLATFORM
+
+TAG_TIME = 0x1 | TagType.QWORD
 
 
 def get_tag_type(tag: int) -> TagType:
@@ -85,19 +93,23 @@ def tag_value_to_string(tag: "Tag") -> tuple[str | None, str | None]:
         )
     elif tag.type == TagType.WORD:
         value = tag.read_word()
-        if tag.name in ("INDEX_TAG", "INDEX_KEY"):
+        if tag.tag in (TAG_INDEX_TAG, TAG_INDEX_KEY):
             return f"{value}", f"{tag_id_to_string(value)}"
         return f"{value}", None
     elif tag.type == TagType.DWORD:
         value = tag.read_dword()
         comment = None
-        if tag.name in ("INDEX_FLAGS",):
+        if tag.tag in (TAG_INDEX_FLAGS,):
             comment = _value_to_flags(value, IndexFlags)
         elif tag.tag in (TAG_OS_PLATFORM, TAG_RUNTIME_PLATFORM):
             comment = _value_to_flags(value, PlatformType)
         return f"{value}", comment
     elif tag.type == TagType.QWORD:
-        return f"{tag.read_qword()}", None
+        comment = None
+        value = tag.read_qword()
+        if tag.tag == TAG_TIME and value != 0:
+            comment = _filetime_to_string(value)
+        return f"{value}", comment
     elif tag.type in (TagType.STRINGREF, TagType.STRING):
         val = tag.read_string()
         return val, None
@@ -124,6 +136,19 @@ def guid_to_string(guid: bytes) -> str:
         f"{guid[8]:02x}{guid[9]:02x}-"
         f"{guid[10]:02x}{guid[11]:02x}{guid[12]:02x}{guid[13]:02x}{guid[14]:02x}{guid[15]:02x}"
     )
+
+
+def _filetime_to_string(filetime: int) -> str:
+    """Converts a Windows filetime (100-nanosecond intervals since 1601-01-01) to an ISO 8601 -ish string."""
+    TICKSTO1970 = 0x019DB1DED53E8000
+    TICKSPERSEC = 10_000_000
+    timestamp = filetime - TICKSTO1970
+    seconds = timestamp // TICKSPERSEC
+    stamp = datetime.fromtimestamp(seconds, tz=timezone.utc)
+    part = stamp.strftime("%Y-%m-%dT%H:%M:%S.")
+    nanoseconds = timestamp % TICKSPERSEC  # Convert to units of 100-nanoseconds
+    part += f"{nanoseconds:07d}Z"  # Format with leading zeros
+    return part
 
 
 class Tag:

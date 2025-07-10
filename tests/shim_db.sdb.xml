@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <SDB xmlns:xs="http://www.w3.org/2001/XMLSchema" file="shim_db.sdb">
   <DATABASE>
-    <TIME type="xs:unsignedLong">131417383762810375</TIME>
+    <TIME type="xs:unsignedLong">131417383762810375<!-- 2017-06-12T10:52:56.2810375Z --></TIME>
     <COMPILER_VERSION type="xs:string">2.1.0.3</COMPILER_VERSION>
     <NAME type="xs:string">ICS</NAME>
     <GUEST_TARGET_PLATFORM type="xs:unsignedInt">1<!-- X86 --></GUEST_TARGET_PLATFORM>

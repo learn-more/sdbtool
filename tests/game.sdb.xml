@@ -51,7 +51,7 @@
     </INDEX>
   </INDEXES>
   <DATABASE>
-    <TIME type="xs:unsignedLong">131111577709124608</TIME>
+    <TIME type="xs:unsignedLong">131111577709124608<!-- 2016-06-23T12:16:10.9124608Z --></TIME>
     <COMPILER_VERSION type="xs:string">2.1.0.3</COMPILER_VERSION>
     <NAME type="xs:string">Anno 1602 Compatibility fix</NAME>
     <GUEST_TARGET_PLATFORM type="xs:unsignedInt">1<!-- X86 --></GUEST_TARGET_PLATFORM>
