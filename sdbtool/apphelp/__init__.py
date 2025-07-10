@@ -83,7 +83,7 @@ def _value_to_flags(value: int, flags: type[IntFlag]) -> str:
     for flag in flags:
         if value & flag:
             values.append(flag.name)
-            value &= ~flag
+            value ^= flag
     if value != 0:
         values.append(f"{value:#x}")
     return " | ".join(values) if values else "0x0"
