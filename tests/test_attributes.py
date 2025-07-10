@@ -11,7 +11,7 @@ import pytest
 
 def test_get_attributes():
     # Test with a valid file
-    file_name = "tests/test_x32.exe"
+    file_name = "tests/data/test_x32.exe"
     expected = [
         'SIZE="2048"',
         'FILESIZE="2048"',
@@ -55,7 +55,7 @@ def test_get_attributes():
     # and the test files used.
     assert all(attr in get_attributes(file_name) for attr in expected)
 
-    file_name = "tests/test_x64.exe"
+    file_name = "tests/data/test_x64.exe"
     expected = [
         'SIZE="2560"',
         'FILESIZE="2560"',

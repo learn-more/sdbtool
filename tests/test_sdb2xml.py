@@ -9,28 +9,23 @@ import io
 from pathlib import Path
 from sdbtool.sdb2xml import convert as sdb2xml_convert, tagtype_to_xmltype
 from sdbtool.apphelp import TagType
+import pytest
 
 
-def test_databases():
-    dbfolder = Path(__file__).parent
-    got_files = []
-    for dbfile in dbfolder.glob("*.sdb"):
-        output = io.StringIO()
-        sdb2xml_convert(str(dbfile), output)
-        output.seek(0)
-        xml_content = output.read()
-        expect_result_file = dbfolder / (dbfile.name + ".xml")
-        with expect_result_file.open("r", encoding="utf-8") as f:
-            expected_content = f.read()
-        assert xml_content == expected_content
-        got_files.append(dbfile.name)
-
-    expected_files = ["game.sdb", "shim_db.sdb", "test.sdb", "testdb.sdb"]
-    expected_files.sort()
-    got_files.sort()
-    assert got_files == expected_files, (
-        f"Expected files: {expected_files}, got: {got_files}"
-    )
+@pytest.mark.parametrize(
+    "db_name",
+    ["game.sdb", "shim_db.sdb", "test.sdb", "testdb.sdb"],
+)
+def test_database(db_name):
+    dbfolder = Path(__file__).parent / 'data'
+    output = io.StringIO()
+    sdb2xml_convert(str(dbfolder / db_name), output)
+    output.seek(0)
+    xml_content = output.read()
+    expect_result_file = dbfolder / (db_name + ".xml")
+    with expect_result_file.open("r", encoding="utf-8") as f:
+        expected_content = f.read()
+    assert xml_content == expected_content
 
 
 def test_tagtype_to_xmltype():
