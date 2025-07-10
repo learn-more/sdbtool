@@ -44,6 +44,19 @@ pip install sdbtool
 pipx install sdbtool
 ```
 
+Updating an installed sdbtool to the latest version with `uv`:
+```shell
+# With uv.
+uv tool upgrade sdbtool
+
+# With pip.
+pip install --upgrade sdbtool
+
+# With pipx.
+pipx upgrade sdbtool
+```
+
+
 ## Contributing<a id="contributing"></a>
 
 Contributions are welcome! Please open issues or submit pull requests.
