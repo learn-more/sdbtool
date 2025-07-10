@@ -11,18 +11,24 @@ from sdbtool.sdb2xml import convert as sdb2xml_convert, tagtype_to_xmltype
 from sdbtool.apphelp import TagType
 import pytest
 
+TESTDATA_FOLDER = Path(__file__).parent / "data"
+TESTFILES = [
+    "app_x32.sdb",
+    "app_x64.sdb",
+    "game.sdb",
+    "shim_db.sdb",
+    "test.sdb",
+    "testdb.sdb",
+]
 
-@pytest.mark.parametrize(
-    "db_name",
-    ["game.sdb", "shim_db.sdb", "test.sdb", "testdb.sdb"],
-)
+
+@pytest.mark.parametrize("db_name", TESTFILES)
 def test_database(db_name):
-    dbfolder = Path(__file__).parent / 'data'
     output = io.StringIO()
-    sdb2xml_convert(str(dbfolder / db_name), output)
+    sdb2xml_convert(str(TESTDATA_FOLDER / db_name), output)
     output.seek(0)
     xml_content = output.read()
-    expect_result_file = dbfolder / (db_name + ".xml")
+    expect_result_file = TESTDATA_FOLDER / (db_name + ".xml")
     with expect_result_file.open("r", encoding="utf-8") as f:
         expected_content = f.read()
     assert xml_content == expected_content

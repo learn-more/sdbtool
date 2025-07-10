@@ -62,6 +62,10 @@ TAG_OS_PLATFORM = 0x23 | TagType.DWORD  # AKA GUEST_TARGET_PLATFORM
 
 TAG_TIME = 0x1 | TagType.QWORD
 
+TAG_LINK_DATE = 0x1D | TagType.DWORD
+TAG_UPTO_LINK_DATE = 0x1E | TagType.DWORD
+FROM_LINK_DATE = 0x33 | TagType.DWORD
+
 
 def get_tag_type(tag: int) -> TagType:
     """Extracts the type from a tag."""
@@ -103,6 +107,12 @@ def tag_value_to_string(tag: "Tag") -> tuple[str | None, str | None]:
             comment = _value_to_flags(value, IndexFlags)
         elif tag.tag in (TAG_OS_PLATFORM, TAG_RUNTIME_PLATFORM):
             comment = _value_to_flags(value, PlatformType)
+        elif (
+            tag.tag in (TAG_LINK_DATE, TAG_UPTO_LINK_DATE, FROM_LINK_DATE)
+            and value != 0
+        ):
+            dt = datetime.fromtimestamp(value, tz=timezone.utc)
+            comment = dt.strftime("%Y-%m-%d %H:%M:%S %Z")
         return f"{value}", comment
     elif tag.type == TagType.QWORD:
         comment = None

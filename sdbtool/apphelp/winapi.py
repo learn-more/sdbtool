@@ -178,7 +178,21 @@ def SdbGetTagFromTagID(db: c_void_p, tag_id: int) -> int:
 
 def SdbTagToString(tag: int) -> str:
     """Convert a tag to its string representation."""
-    return APPHELP.SdbTagToString(tag)
+    name = APPHELP.SdbTagToString(tag)
+    # Some temp hacks here until we handle fallback / tag to string properly (#18)
+    if tag == 28756 and name == "InvalidTag":
+        return "BACKUP_FILE"
+    elif tag == 28757 and name == "InvalidTag":
+        return "BACKUP_APPLICATION"
+    elif tag == 28758 and name == "InvalidTag":
+        return "BACKUP_PACKAGE"
+    elif tag == 28759 and name == "InvalidTag":
+        return "RESTORE_FILE"
+    elif tag == 28760 and name == "InvalidTag":
+        return "RESTORE_APPLICATION"
+    elif tag == 28761 and name == "InvalidTag":
+        return "RESTORE_PACKAGE"
+    return name
 
 
 def SdbReadWORDTag(db: c_void_p, tag_id: int, default: int = 0) -> int:
