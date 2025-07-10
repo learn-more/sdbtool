@@ -5,13 +5,16 @@ PURPOSE:     tests for the guid_to_string function in the apphelp module.
 COPYRIGHT:   Copyright 2025 Mark Jansen <mark.jansen@reactos.org>
 """
 
-from sdbtool.attributes import get_attributes
 import pytest
+from sdbtool.attributes import get_attributes
+from pathlib import Path
+
+TESTDATA_FOLDER = Path(__file__).parent / "data"
 
 
 def test_get_attributes():
     # Test with a valid file
-    file_name = "tests/data/test_x32.exe"
+    file_name = TESTDATA_FOLDER / "test_x32.exe"
     expected = [
         'SIZE="2048"',
         'FILESIZE="2048"',
@@ -55,7 +58,7 @@ def test_get_attributes():
     # and the test files used.
     assert all(attr in get_attributes(file_name) for attr in expected)
 
-    file_name = "tests/data/test_x64.exe"
+    file_name = TESTDATA_FOLDER / "test_x64.exe"
     expected = [
         'SIZE="2560"',
         'FILESIZE="2560"',
