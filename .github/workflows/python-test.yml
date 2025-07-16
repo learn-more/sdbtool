@@ -14,6 +14,9 @@ jobs:
       matrix:
         python-version: ["3.10", "3.11", "3.12"]
 
+    env:
+      UV_PYTHON_VERSION: ${{ matrix.python-version }}
+
     steps:
       - uses: actions/checkout@v4
 
@@ -23,4 +26,16 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Test with python ${{ matrix.python-version }}
-        run: uv run --frozen pytest
+        run: uv run --frozen coverage run --branch -m pytest
+
+      - name: Generate coverage report
+        run: uv run --frozen coverage xml
+
+      - name: Upload coverage report
+        uses: codecov/codecov-action@v5
+        with:
+          fail_on_error: true
+          token: ${{ secrets.CODECOV_TOKEN }}
+          env_vars: UV_PYTHON_VERSION
+          files: ./coverage.xml
+          flags: unittests
