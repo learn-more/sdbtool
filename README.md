@@ -2,12 +2,21 @@
 
 A tool for converting Microsoft Application Compatibility Database (SDB) files to XML format.
 
+--------
+
+![PyPI - Version](https://img.shields.io/pypi/v/sdbtool)
+![PyPI - License](https://img.shields.io/pypi/l/sdbtool)<br />
+[![CI](https://github.com/learn-more/sdbtool/actions/workflows/python-test.yml/badge.svg?event=push)](https://github.com/learn-more/sdbtool/actions/workflows/python-test.yml)
+[![Publish Python Package](https://github.com/learn-more/sdbtool/actions/workflows/python-publish.yml/badge.svg)](https://github.com/learn-more/sdbtool/actions/workflows/python-publish.yml)
+[![codecov](https://codecov.io/gh/learn-more/sdbtool/graph/badge.svg?token=Z476TDD3B2)](https://codecov.io/gh/learn-more/sdbtool)
+
+
+
 ## Table of Contents
 
 1. [Features](#features)
 1. [Getting Started](#getting-started)
 1. [Contributing](#contributing)
-1. [License](#license)
 
 ## Features<a id="features"></a>
 
@@ -60,7 +69,3 @@ pipx upgrade sdbtool
 ## Contributing<a id="contributing"></a>
 
 Contributions are welcome! Please open issues or submit pull requests.
-
-## License<a id="license"></a>
-
-This project is licensed under the MIT License.
