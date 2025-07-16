@@ -10,6 +10,7 @@ from enum import IntEnum, IntFlag
 from base64 import b64encode
 import sdbtool.apphelp.winapi as apphelp
 from datetime import datetime, timezone
+from abc import ABC, abstractmethod
 
 
 TAG_NULL = 0x0
@@ -232,18 +233,18 @@ class Tag:
             visitor.visit(self)
 
 
-class TagVisitor:
+class TagVisitor(ABC):
+    @abstractmethod
     def visit(self, tag: Tag):
         """Visit a tag. Override this method in subclasses."""
-        raise NotImplementedError("Subclasses must implement visit method")
 
+    @abstractmethod
     def visit_list_begin(self, tag: Tag):
         """Visit a list tag. Override this method in subclasses."""
-        raise NotImplementedError("Subclasses must implement visit_list_begin method")
 
+    @abstractmethod
     def visit_list_end(self, tag: Tag):
         """Visit the end of a list tag. Override this method in subclasses."""
-        raise NotImplementedError("Subclasses must implement visit_list_end method")
 
 
 class SdbDatabase:

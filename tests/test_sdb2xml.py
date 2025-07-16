@@ -7,8 +7,12 @@ COPYRIGHT:   Copyright 2025 Mark Jansen <mark.jansen@reactos.org>
 
 import io
 from pathlib import Path
-from sdbtool.sdb2xml import convert as sdb2xml_convert, tagtype_to_xmltype
-from sdbtool.apphelp import TagType
+from sdbtool.sdb2xml import (
+    XmlTagVisitor,
+    convert as sdb2xml_convert,
+    tagtype_to_xmltype,
+)
+from sdbtool.apphelp import TAGID_ROOT, PathType, SdbDatabase, Tag, TagType, winapi
 import pytest
 
 TESTDATA_FOLDER = Path(__file__).parent / "data"
@@ -44,3 +48,18 @@ def test_tagtype_to_xmltype():
     assert tagtype_to_xmltype(TagType.DWORD) == "xs:unsignedInt"
     assert tagtype_to_xmltype(TagType.WORD) == "xs:unsignedShort"
     assert tagtype_to_xmltype(TagType.BYTE) == "xs:byte"
+
+
+def test_XmlTagVisitor_invalid_visit(monkeypatch):
+    def mock_SdbOpenDatabase(path, type):
+        return None
+
+    monkeypatch.setattr(winapi, "SdbOpenDatabase", mock_SdbOpenDatabase)
+
+    visitor = XmlTagVisitor(io.StringIO(), "test.sdb")
+    db = SdbDatabase("test.sdb", PathType.DOS_PATH)
+    tag = Tag(db=db, tag_id=TAGID_ROOT)  #
+    tag.type = TagType.LIST  # Invalid type for visit method
+    tag.name = "TestTag"
+    with pytest.raises(ValueError, match="Unknown xml tag type: LIST for tag TestTag"):
+        visitor.visit(tag)

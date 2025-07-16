@@ -60,12 +60,11 @@ class XmlTagVisitor(TagVisitor):
             return
 
         attrs = {}
-        if tag.type != TagType.LIST:
-            typename = tagtype_to_xmltype(tag.type)
-            if typename is not None:
-                attrs["type"] = typename
-            else:
-                raise ValueError(f"Unknown xml tag type: {tag.type} for tag {tag.name}")
+        typename = tagtype_to_xmltype(tag.type)
+        if typename is not None:
+            attrs["type"] = typename
+        else:
+            raise ValueError(f"Unknown xml tag type: {tag.type.name} for tag {tag.name}")
 
         self.writer.open(tag.name, attrs)
         self._write_tag_value(tag)
