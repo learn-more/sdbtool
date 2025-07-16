@@ -4,8 +4,9 @@ A tool for converting Microsoft Application Compatibility Database (SDB) files t
 
 --------
 
-![PyPI - Version](https://img.shields.io/pypi/v/sdbtool)
-![PyPI - License](https://img.shields.io/pypi/l/sdbtool)<br />
+[![PyPI - Version](https://img.shields.io/pypi/v/sdbtool)](https://pypi.org/project/sdbtool/)
+[![PyPI - License](https://img.shields.io/pypi/l/sdbtool)](https://pypi.org/project/sdbtool/)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/sdbtool)](https://pypi.org/project/sdbtool/)\
 [![CI](https://github.com/learn-more/sdbtool/actions/workflows/python-test.yml/badge.svg?event=push)](https://github.com/learn-more/sdbtool/actions/workflows/python-test.yml)
 [![Publish Python Package](https://github.com/learn-more/sdbtool/actions/workflows/python-publish.yml/badge.svg)](https://github.com/learn-more/sdbtool/actions/workflows/python-publish.yml)
 [![codecov](https://codecov.io/gh/learn-more/sdbtool/graph/badge.svg?token=Z476TDD3B2)](https://codecov.io/gh/learn-more/sdbtool)
