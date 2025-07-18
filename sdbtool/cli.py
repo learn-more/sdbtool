@@ -15,7 +15,7 @@ import click
 @click.version_option()
 def sdbtool_command():
     """sdbtool: A command-line tool for working with SDB files."""
-    pass
+    pass  # pragma: no cover
 
 
 @sdbtool_command.command("sdb2xml")

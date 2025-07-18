@@ -65,7 +65,7 @@ TAG_TIME = 0x1 | TagType.QWORD
 
 TAG_LINK_DATE = 0x1D | TagType.DWORD
 TAG_UPTO_LINK_DATE = 0x1E | TagType.DWORD
-FROM_LINK_DATE = 0x33 | TagType.DWORD
+TAG_FROM_LINK_DATE = 0x33 | TagType.DWORD
 
 
 def get_tag_type(tag: int) -> TagType:
@@ -90,12 +90,9 @@ def _value_to_flags(value: int, flags: type[IntFlag]) -> str:
     return " | ".join(values) if values else "0x0"
 
 
-def tag_value_to_string(tag: "Tag") -> tuple[str | None, str | None]:
+def tag_value_to_string(tag: "Tag") -> tuple[str, str | None]:
     if tag.type == TagType.BYTE:
-        return (
-            None,
-            "UNHANDLED BYTE TAG, please report this at https://github.com/learn-more/sdbtool",
-        )
+        return f"{tag.read_byte()}", None
     elif tag.type == TagType.WORD:
         value = tag.read_word()
         if tag.tag in (TAG_INDEX_TAG, TAG_INDEX_KEY):
@@ -109,7 +106,7 @@ def tag_value_to_string(tag: "Tag") -> tuple[str | None, str | None]:
         elif tag.tag in (TAG_OS_PLATFORM, TAG_RUNTIME_PLATFORM):
             comment = _value_to_flags(value, PlatformType)
         elif (
-            tag.tag in (TAG_LINK_DATE, TAG_UPTO_LINK_DATE, FROM_LINK_DATE)
+            tag.tag in (TAG_LINK_DATE, TAG_UPTO_LINK_DATE, TAG_FROM_LINK_DATE)
             and value != 0
         ):
             dt = datetime.fromtimestamp(value, tz=timezone.utc)
@@ -133,7 +130,7 @@ def tag_value_to_string(tag: "Tag") -> tuple[str | None, str | None]:
                 return base64_data, f"{{{guid_str}}}"
             return base64_data, None
         return "", None
-    raise ValueError(f"Unknown tag type: {tag.type} for tag {tag.name}")
+    raise ValueError(f"Unknown tag type: {tag.type.name} for tag {tag.name}")
 
 
 def guid_to_string(guid: bytes) -> str:
@@ -189,6 +186,12 @@ class Tag:
             child = apphelp.SdbGetNextChild(
                 self._ensure_db_handle(), self.tag_id, child
             )
+
+    def read_byte(self, default: int = 0) -> int:
+        """Returns the tag value as a byte (8-bit integer)."""
+        if self.type != TagType.BYTE:
+            raise ValueError(f"Tag {self.name} is not a BYTE type")
+        return apphelp.SdbReadBYTETag(self._ensure_db_handle(), self.tag_id, default)
 
     def read_word(self, default: int = 0) -> int:
         """Returns the tag value as a word (16-bit integer)."""

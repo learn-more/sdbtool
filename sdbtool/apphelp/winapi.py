@@ -7,6 +7,7 @@ COPYRIGHT:   Copyright 2025 Mark Jansen <mark.jansen@reactos.org>
 
 from ctypes import (
     byref,
+    c_uint8,
     create_unicode_buffer,
     windll,
     c_void_p,
@@ -46,7 +47,11 @@ APPHELP.SdbGetTagFromTagID.restype = c_uint16
 APPHELP.SdbTagToString.argtypes = [c_uint16]
 APPHELP.SdbTagToString.restype = c_wchar_p
 
-# WORD WINAPI SdbReadDWORDTag(PDB pdb, TAGID tagid, WORD ret);
+# BYTE WINAPI SdbReadBYTETag(PDB pdb, TAGID tagid, BYTE ret);
+APPHELP.SdbReadBYTETag.argtypes = [c_void_p, c_uint32, c_uint8]
+APPHELP.SdbReadBYTETag.restype = c_uint8
+
+# WORD WINAPI SdbReadWORDTag(PDB pdb, TAGID tagid, WORD ret);
 APPHELP.SdbReadWORDTag.argtypes = [c_void_p, c_uint32, c_uint16]
 APPHELP.SdbReadWORDTag.restype = c_uint16
 
@@ -193,6 +198,11 @@ def SdbTagToString(tag: int) -> str:
     elif tag == 28761 and name == "InvalidTag":
         return "RESTORE_PACKAGE"
     return name
+
+
+def SdbReadBYTETag(db: c_void_p, tag_id: int, default: int = 0) -> int:
+    """Read a BYTE tag from the database."""
+    return APPHELP.SdbReadBYTETag(db, tag_id, default)
 
 
 def SdbReadWORDTag(db: c_void_p, tag_id: int, default: int = 0) -> int:

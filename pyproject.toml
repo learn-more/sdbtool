@@ -53,3 +53,10 @@ dev = [
     "pytest-cov>=6.2.1",
 ]
 
+[tool.coverage.run]
+branch = true
+
+[tool.coverage.report]
+exclude_also = [
+    "if __name__ == .__main__.:",
+]

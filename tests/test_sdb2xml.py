@@ -16,26 +16,55 @@ from sdbtool.apphelp import TAGID_ROOT, PathType, SdbDatabase, Tag, TagType, win
 import pytest
 
 TESTDATA_FOLDER = Path(__file__).parent / "data"
-TESTFILES = [
-    "app_x32.sdb",
-    "app_x64.sdb",
-    "game.sdb",
-    "shim_db.sdb",
-    "test.sdb",
-    "testdb.sdb",
-]
+
+ALL_TAGS_RESULT = """<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<SDB xmlns:xs="http://www.w3.org/2001/XMLSchema" file="all_tagtypes.sdb">
+  <DATABASE>
+    <InvalidTag></InvalidTag>
+    <InvalidTag />
+    <InvalidTag type="xs:byte">255</InvalidTag>
+    <InvalidTag type="xs:unsignedShort">65535</InvalidTag>
+    <InvalidTag type="xs:unsignedInt">4294967295</InvalidTag>
+    <InvalidTag type="xs:unsignedLong">18446744073709551615</InvalidTag>
+    <InvalidTag type="xs:base64Binary">//////////8=</InvalidTag>
+    <InvalidTag type="xs:string"></InvalidTag>
+    <InvalidTag type="xs:string"></InvalidTag>
+    <DATABASE></DATABASE>
+    <INCLUDE />
+    <InvalidTag type="xs:byte">0</InvalidTag>
+    <MATCH_MODE type="xs:unsignedShort">0</MATCH_MODE>
+    <SIZE type="xs:unsignedInt">0</SIZE>
+    <BIN_FILE_VERSION type="xs:unsignedLong">0</BIN_FILE_VERSION>
+    <InvalidTag type="xs:base64Binary">AAAAAAAAAAA=</InvalidTag>
+    <InvalidTag type="xs:string">val</InvalidTag>
+    <NAME type="xs:string"></NAME>
+    <INDEX_TAG type="xs:unsignedShort">14338<!-- INDEX_TAG --></INDEX_TAG>
+    <INDEX_KEY type="xs:unsignedShort">14339<!-- INDEX_KEY --></INDEX_KEY>
+    <INDEX_FLAGS type="xs:unsignedInt">3<!-- SHIMDB_INDEX_UNIQUE_KEY | SHIMDB_INDEX_TRAILING_CHARACTERS --></INDEX_FLAGS>
+    <GUEST_TARGET_PLATFORM type="xs:unsignedInt">17<!-- X86 | ARM64 --></GUEST_TARGET_PLATFORM>
+    <RUNTIME_PLATFORM type="xs:unsignedInt">34<!-- AMD64 | 0x20 --></RUNTIME_PLATFORM>
+    <LINK_DATE type="xs:unsignedInt">0</LINK_DATE>
+    <UPTO_LINK_DATE type="xs:unsignedInt">1<!-- 1970-01-01 00:00:01 UTC --></UPTO_LINK_DATE>
+    <FROM_LINK_DATE type="xs:unsignedInt">69922<!-- 1970-01-01 19:25:22 UTC --></FROM_LINK_DATE>
+    <TIME type="xs:unsignedLong">0</TIME>
+    <TIME type="xs:unsignedLong">131560831927601799<!-- 2017-11-25T11:33:12.7601799Z --></TIME>
+    <EXE_ID type="xs:base64Binary"></EXE_ID>
+    <EXE_ID type="xs:base64Binary">iHdmVSIRIhERIjNEVWZ3iA==<!-- {55667788-1122-1122-1122-334455667788} --></EXE_ID>
+  </DATABASE>
+</SDB>"""
 
 
-@pytest.mark.parametrize("db_name", TESTFILES)
-def test_database(db_name):
+def test_database():
     output = io.StringIO()
-    sdb2xml_convert(str(TESTDATA_FOLDER / db_name), output)
+    sdb2xml_convert(str(TESTDATA_FOLDER / "all_tagtypes.sdb"), output)
     output.seek(0)
     xml_content = output.read()
-    expect_result_file = TESTDATA_FOLDER / (db_name + ".xml")
-    with expect_result_file.open("r", encoding="utf-8") as f:
-        expected_content = f.read()
-    assert xml_content == expected_content
+    assert xml_content == ALL_TAGS_RESULT
+
+
+def test_invalid_database():
+    with pytest.raises(FileNotFoundError):
+        sdb2xml_convert(str(TESTDATA_FOLDER / "non_existent.sdb"), io.StringIO())
 
 
 def test_tagtype_to_xmltype():

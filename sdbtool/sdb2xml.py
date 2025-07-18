@@ -64,7 +64,9 @@ class XmlTagVisitor(TagVisitor):
         if typename is not None:
             attrs["type"] = typename
         else:
-            raise ValueError(f"Unknown xml tag type: {tag.type.name} for tag {tag.name}")
+            raise ValueError(
+                f"Unknown xml tag type: {tag.type.name} for tag {tag.name}"
+            )
 
         self.writer.open(tag.name, attrs)
         self._write_tag_value(tag)
@@ -72,8 +74,7 @@ class XmlTagVisitor(TagVisitor):
 
     def _write_tag_value(self, tag: Tag):
         value, comment = tag_value_to_string(tag)
-        if value is not None:
-            self.writer.write(value)
+        self.writer.write(value)
         if comment is not None:
             self.writer.write_comment(comment)
 
@@ -81,10 +82,11 @@ class XmlTagVisitor(TagVisitor):
 def convert(input_file: str, output_stream):
     with SdbDatabase(input_file, PathType.DOS_PATH) as db:
         if not db:
-            raise ValueError(f"Failed to open database at '{input_file}'")
+            raise FileNotFoundError(f"Failed to open database at '{input_file}'")
 
         visitor = XmlTagVisitor(output_stream, Path(input_file).name)
         root = db.root()
-        if root is None:
-            raise ValueError(f"No root tag found in database '{input_file}'")
+        assert root is not None, (
+            "This is impossible, otherwise the previous exception would have been raised."
+        )
         root.accept(visitor)

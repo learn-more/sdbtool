@@ -1,7 +1,7 @@
 """
 PROJECT:     sdbtool
 LICENSE:     MIT (https://spdx.org/licenses/MIT)
-PURPOSE:     tests for the guid_to_string function in the apphelp module.
+PURPOSE:     tests for the attributes module.
 COPYRIGHT:   Copyright 2025 Mark Jansen <mark.jansen@reactos.org>
 """
 
