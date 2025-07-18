@@ -26,10 +26,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Test with python ${{ matrix.python-version }}
-        run: uv run --frozen coverage run --branch -m pytest
-
-      - name: Generate coverage report
-        run: uv run --frozen coverage xml
+        run: uv run --frozen pytest --cov=. --cov-branch --cov-report=xml --no-cov-on-fail
 
       - name: Upload coverage report
         uses: codecov/codecov-action@v5
