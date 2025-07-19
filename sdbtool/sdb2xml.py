@@ -31,14 +31,20 @@ def tagtype_to_xmltype(tag_type: TagType) -> str | None:
 
 
 class XmlTagVisitor(TagVisitor):
-    def __init__(self, stream, input_filename: str):
+    def __init__(self, stream, input_filename: str, exclude_tags: list[str]):
         """Initialize the XML tag visitor with a filename."""
         self.writer = XmlWriter(stream)
         self._first = True
         self._input_filename = input_filename
+        self._exclude_tags = exclude_tags
+        self._skip_depth = 0
 
     def visit_list_begin(self, tag: Tag):
         """Visit the beginning of a list tag."""
+        if tag.name in self._exclude_tags:
+            self._skip_depth += 1
+        if self._skip_depth > 0:
+            return
         attrs = None
         if self._first:
             self._first = False
@@ -51,10 +57,18 @@ class XmlTagVisitor(TagVisitor):
 
     def visit_list_end(self, tag: Tag):
         """Visit the end of a list tag."""
+        if self._skip_depth > 0:
+            if tag.name in self._exclude_tags:
+                self._skip_depth -= 1
+            return
         self.writer.close(tag.name)
 
     def visit(self, tag: Tag):
         """Visit a tag."""
+        if self._skip_depth > 0:
+            return
+        if tag.name in self._exclude_tags:
+            return
         if tag.type == TagType.NULL:
             self.writer.empty_tag(tag.name)
             return
@@ -79,12 +93,12 @@ class XmlTagVisitor(TagVisitor):
             self.writer.write_comment(comment)
 
 
-def convert(input_file: str, output_stream):
+def convert(input_file: str, output_stream, exclude_tags: list[str]):
     with SdbDatabase(input_file, PathType.DOS_PATH) as db:
         if not db:
             raise FileNotFoundError(f"Failed to open database at '{input_file}'")
 
-        visitor = XmlTagVisitor(output_stream, Path(input_file).name)
+        visitor = XmlTagVisitor(output_stream, Path(input_file).name, exclude_tags)
         root = db.root()
         assert root is not None, (
             "This is impossible, otherwise the previous exception would have been raised."

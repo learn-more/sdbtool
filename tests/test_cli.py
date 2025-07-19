@@ -29,7 +29,7 @@ def test_noargs():
 
 def test_sdb2xml_command(tmp_path, monkeypatch):
     monkeypatch.setattr(
-        "sdbtool.sdb2xml.convert", lambda *args, **kwargs: click.echo("nop")
+        "sdbtool.sdb2xml.convert", lambda input_file, output_stream, exclude_tags: click.echo(f"nop:{exclude_tags}")
     )
     runner = CliRunner()
     with runner.isolated_filesystem(tmp_path):
@@ -37,8 +37,13 @@ def test_sdb2xml_command(tmp_path, monkeypatch):
             f.write("This is a test SDB file.")
         result = runner.invoke(sdbtool_command, ["sdb2xml", "test.sdb"])
         assert result.exit_code == 0
-        assert "nop\n" == result.output
-
+        assert "nop:[]\n" == result.output
+        result = runner.invoke(sdbtool_command, ["sdb2xml", "test.sdb", "--exclude", "XXX,YYY"])
+        assert result.exit_code == 0
+        assert "nop:['XXX', 'YYY']\n" == result.output
+        result = runner.invoke(sdbtool_command, ["sdb2xml", "test.sdb", "--exclude=auto"])
+        assert result.exit_code == 0
+        assert "nop:['INDEXES', 'STRINGTABLE']\n" == result.output
 
 def test_sdb2xml_exception(tmp_path, monkeypatch):
     def raise_value_error(*args, **kwargs):

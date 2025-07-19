@@ -26,10 +26,21 @@ def sdbtool_command():
     default="-",
     help="Path to the output XML file, or '-' for stdout.",
 )
-def sdb2xml_command(input_file, output):
+@click.option(
+    "--exclude",
+    type=click.STRING,
+    default="",
+    metavar="TAG,TAG",
+    help="Exclude specified tags from the SDB file (auto is an alias for 'INDEXES,STRINGTABLE').",
+)
+def sdb2xml_command(input_file, output, exclude):
     """Convert an SDB file to XML format."""
     try:
-        sdb2xml.convert(input_file, output)
+        exclude = [c.strip() for c in exclude.split(',') if c.strip()]
+        if "auto" in exclude:
+            exclude.remove("auto")
+            exclude.extend(["INDEXES", "STRINGTABLE"])
+        sdb2xml.convert(input_file=input_file, output_stream=output, exclude_tags=exclude)
     except Exception as e:
         click.echo(f"Error converting SDB to XML: {e}")
         sys.exit(1)

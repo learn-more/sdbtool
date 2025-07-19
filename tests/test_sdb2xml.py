@@ -38,33 +38,57 @@ ALL_TAGS_RESULT = """<?xml version="1.0" encoding="utf-8" standalone="yes"?>
     <InvalidTag type="xs:base64Binary">AAAAAAAAAAA=</InvalidTag>
     <InvalidTag type="xs:string">val</InvalidTag>
     <NAME type="xs:string"></NAME>
-    <INDEX_TAG type="xs:unsignedShort">14338<!-- INDEX_TAG --></INDEX_TAG>
-    <INDEX_KEY type="xs:unsignedShort">14339<!-- INDEX_KEY --></INDEX_KEY>
-    <INDEX_FLAGS type="xs:unsignedInt">3<!-- SHIMDB_INDEX_UNIQUE_KEY | SHIMDB_INDEX_TRAILING_CHARACTERS --></INDEX_FLAGS>
-    <GUEST_TARGET_PLATFORM type="xs:unsignedInt">17<!-- X86 | ARM64 --></GUEST_TARGET_PLATFORM>
-    <RUNTIME_PLATFORM type="xs:unsignedInt">34<!-- AMD64 | 0x20 --></RUNTIME_PLATFORM>
-    <LINK_DATE type="xs:unsignedInt">0</LINK_DATE>
-    <UPTO_LINK_DATE type="xs:unsignedInt">1<!-- 1970-01-01 00:00:01 UTC --></UPTO_LINK_DATE>
-    <FROM_LINK_DATE type="xs:unsignedInt">69922<!-- 1970-01-01 19:25:22 UTC --></FROM_LINK_DATE>
-    <TIME type="xs:unsignedLong">0</TIME>
-    <TIME type="xs:unsignedLong">131560831927601799<!-- 2017-11-25T11:33:12.7601799Z --></TIME>
-    <EXE_ID type="xs:base64Binary"></EXE_ID>
-    <EXE_ID type="xs:base64Binary">iHdmVSIRIhERIjNEVWZ3iA==<!-- {55667788-1122-1122-1122-334455667788} --></EXE_ID>
+    <LIBRARY>
+      <INDEX_TAG type="xs:unsignedShort">14338<!-- INDEX_TAG --></INDEX_TAG>
+      <INDEX_KEY type="xs:unsignedShort">14339<!-- INDEX_KEY --></INDEX_KEY>
+      <INDEX_FLAGS type="xs:unsignedInt">3<!-- SHIMDB_INDEX_UNIQUE_KEY | SHIMDB_INDEX_TRAILING_CHARACTERS --></INDEX_FLAGS>
+      <GUEST_TARGET_PLATFORM type="xs:unsignedInt">17<!-- X86 | ARM64 --></GUEST_TARGET_PLATFORM>
+      <RUNTIME_PLATFORM type="xs:unsignedInt">34<!-- AMD64 | 0x20 --></RUNTIME_PLATFORM>
+    </LIBRARY>
+    <PATCH>
+      <APP>
+        <EXE>
+          <LINK_DATE type="xs:unsignedInt">0</LINK_DATE>
+          <UPTO_LINK_DATE type="xs:unsignedInt">1<!-- 1970-01-01 00:00:01 UTC --></UPTO_LINK_DATE>
+          <FROM_LINK_DATE type="xs:unsignedInt">69922<!-- 1970-01-01 19:25:22 UTC --></FROM_LINK_DATE>
+        </EXE>
+        <TIME type="xs:unsignedLong">0</TIME>
+        <TIME type="xs:unsignedLong">131560831927601799<!-- 2017-11-25T11:33:12.7601799Z --></TIME>
+        <EXE_ID type="xs:base64Binary"></EXE_ID>
+        <EXE_ID type="xs:base64Binary">iHdmVSIRIhERIjNEVWZ3iA==<!-- {55667788-1122-1122-1122-334455667788} --></EXE_ID>
+      </APP>
+    </PATCH>
   </DATABASE>
 </SDB>"""
 
 
 def test_database():
     output = io.StringIO()
-    sdb2xml_convert(str(TESTDATA_FOLDER / "all_tagtypes.sdb"), output)
+    sdb2xml_convert(str(TESTDATA_FOLDER / "all_tagtypes.sdb"), output, exclude_tags=[])
     output.seek(0)
     xml_content = output.read()
     assert xml_content == ALL_TAGS_RESULT
 
 
+def test_database_with_exclude_tags():
+    output = io.StringIO()
+    sdb2xml_convert(
+        str(TESTDATA_FOLDER / "all_tagtypes.sdb"),
+        output,
+        exclude_tags=["PATCH", "APP", "BIN_FILE_VERSION", "TIME"],
+    )
+    output.seek(0)
+    xml_content = output.read()
+    assert "INDEXES" not in xml_content
+    assert "BIN_FILE_VERSION" not in xml_content
+    assert "LINK_DATE" not in xml_content
+
+
 def test_invalid_database():
     with pytest.raises(FileNotFoundError):
-        sdb2xml_convert(str(TESTDATA_FOLDER / "non_existent.sdb"), io.StringIO())
+        sdb2xml_convert(
+            str(TESTDATA_FOLDER / "non_existent.sdb"), io.StringIO(), exclude_tags=[]
+        )
 
 
 def test_tagtype_to_xmltype():
@@ -85,7 +109,7 @@ def test_XmlTagVisitor_invalid_visit(monkeypatch):
 
     monkeypatch.setattr(winapi, "SdbOpenDatabase", mock_SdbOpenDatabase)
 
-    visitor = XmlTagVisitor(io.StringIO(), "test.sdb")
+    visitor = XmlTagVisitor(io.StringIO(), "test.sdb", exclude_tags=[])
     db = SdbDatabase("test.sdb", PathType.DOS_PATH)
     tag = Tag(db=db, tag_id=TAGID_ROOT)  #
     tag.type = TagType.LIST  # Invalid type for visit method
