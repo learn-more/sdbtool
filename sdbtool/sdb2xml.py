@@ -18,9 +18,9 @@ from pathlib import Path
 import enum
 
 
-class Annotations(enum.Enum):
-    Disabled = enum.auto()
-    Comment = enum.auto()
+class XmlAnnotations(str, enum.Enum):
+    Disabled = "disabled"
+    Comment = "comment"
 
 
 def tagtype_to_xmltype(tag_type: TagType) -> str | None:
@@ -37,7 +37,7 @@ def tagtype_to_xmltype(tag_type: TagType) -> str | None:
 
 
 class XmlTagVisitor(TagVisitor):
-    def __init__(self, stream, input_filename: str, exclude_tags: list[str], annotations: Annotations):
+    def __init__(self, stream, input_filename: str, exclude_tags: list[str], annotations: XmlAnnotations):
         """Initialize the XML tag visitor with a filename."""
         self.writer = XmlWriter(stream)
         self._first = True
@@ -100,7 +100,7 @@ class XmlTagVisitor(TagVisitor):
             self.writer.write_comment(comment)
 
 
-def convert(input_file: str, output_stream, exclude_tags: list[str], annotations: Annotations):
+def convert(input_file: Path, output_stream, exclude_tags: list[str], annotations: XmlAnnotations):
     with SdbDatabase(input_file, PathType.DOS_PATH) as db:
         if not db:
             raise FileNotFoundError(f"Failed to open database at '{input_file}'")

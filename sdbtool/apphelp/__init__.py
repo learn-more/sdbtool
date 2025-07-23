@@ -10,6 +10,7 @@ from enum import IntEnum, IntFlag
 from base64 import b64encode
 import sdbtool.apphelp.winapi as apphelp
 from datetime import datetime, timezone
+from pathlib import Path
 from abc import ABC, abstractmethod
 
 
@@ -251,10 +252,10 @@ class TagVisitor(ABC):
 
 
 class SdbDatabase:
-    def __init__(self, path: str, path_type: PathType):
+    def __init__(self, path: Path, path_type: PathType):
         self.path = path
         self.path_type = path_type
-        self._handle = apphelp.SdbOpenDatabase(path, path_type)
+        self._handle = apphelp.SdbOpenDatabase(str(path), path_type)
         self._root = None
 
     def root(self) -> Tag | None:
