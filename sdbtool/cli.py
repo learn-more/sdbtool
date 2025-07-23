@@ -6,12 +6,21 @@ COPYRIGHT:   Copyright 2025 Mark Jansen <mark.jansen@reactos.org>
 """
 
 import sys
-from sdbtool import sdb2xml
+from sdbtool.sdb2xml import convert as sdb2xml_convert, Annotations
 from sdbtool.attributes import get_attributes
 import click
 
 
-@click.group(name="sdbtool", help="A command-line tool for working with SDB files.")
+CONTEXT_SETTINGS = dict(
+    max_content_width=200,
+)
+
+
+@click.group(
+    name="sdbtool",
+    help="A command-line tool for working with SDB files.",
+    context_settings=CONTEXT_SETTINGS,
+)
 @click.version_option()
 def sdbtool_command():
     """sdbtool: A command-line tool for working with SDB files."""
@@ -31,16 +40,29 @@ def sdbtool_command():
     type=click.STRING,
     default="",
     metavar="TAG,TAG",
-    help="Exclude specified tags from the SDB file (auto is an alias for 'INDEXES,STRINGTABLE').",
+    help="Exclude specified tags from the SDB file."
+    " Use 'auto' as an alias for 'INDEXES,STRINGTABLE'.",
 )
-def sdb2xml_command(input_file, output, exclude):
+@click.option(
+    "--annotations",
+    type=click.Choice(Annotations, case_sensitive=False),
+    default=Annotations.Comment,
+    show_default=True,
+    help="Specify the type of annotations to include in the XML output: 'Disabled' - no annotations. 'Comment' - annotations as comments.",
+)
+def sdb2xml_command(input_file, output, exclude, annotations):
     """Convert an SDB file to XML format."""
     try:
-        exclude = [c.strip() for c in exclude.split(',') if c.strip()]
+        exclude = [c.strip() for c in exclude.split(",") if c.strip()]
         if "auto" in exclude:
             exclude.remove("auto")
             exclude.extend(["INDEXES", "STRINGTABLE"])
-        sdb2xml.convert(input_file=input_file, output_stream=output, exclude_tags=exclude)
+        sdb2xml_convert(
+            input_file=input_file,
+            output_stream=output,
+            exclude_tags=exclude,
+            annotations=annotations,
+        )
     except Exception as e:
         click.echo(f"Error converting SDB to XML: {e}")
         sys.exit(1)

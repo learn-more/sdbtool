@@ -8,6 +8,7 @@ COPYRIGHT:   Copyright 2025 Mark Jansen <mark.jansen@reactos.org>
 import io
 from pathlib import Path
 from sdbtool.sdb2xml import (
+    Annotations,
     XmlTagVisitor,
     convert as sdb2xml_convert,
     tagtype_to_xmltype,
@@ -64,7 +65,12 @@ ALL_TAGS_RESULT = """<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 
 def test_database():
     output = io.StringIO()
-    sdb2xml_convert(str(TESTDATA_FOLDER / "all_tagtypes.sdb"), output, exclude_tags=[])
+    sdb2xml_convert(
+        str(TESTDATA_FOLDER / "all_tagtypes.sdb"),
+        output,
+        exclude_tags=[],
+        annotations=Annotations.Comment,
+    )
     output.seek(0)
     xml_content = output.read()
     assert xml_content == ALL_TAGS_RESULT
@@ -76,6 +82,7 @@ def test_database_with_exclude_tags():
         str(TESTDATA_FOLDER / "all_tagtypes.sdb"),
         output,
         exclude_tags=["PATCH", "APP", "BIN_FILE_VERSION", "TIME"],
+        annotations=Annotations.Comment,
     )
     output.seek(0)
     xml_content = output.read()
@@ -87,8 +94,31 @@ def test_database_with_exclude_tags():
 def test_invalid_database():
     with pytest.raises(FileNotFoundError):
         sdb2xml_convert(
-            str(TESTDATA_FOLDER / "non_existent.sdb"), io.StringIO(), exclude_tags=[]
+            str(TESTDATA_FOLDER / "non_existent.sdb"),
+            io.StringIO(),
+            exclude_tags=[],
+            annotations=Annotations.Comment,
         )
+
+
+def test_annotations():
+    output = io.StringIO()
+    sdb2xml_convert(
+        str(TESTDATA_FOLDER / "all_tagtypes.sdb"),
+        output,
+        exclude_tags=[],
+        annotations=Annotations.Disabled,
+    )
+    output.seek(0)
+    xml_content = output.read()
+    # These comments should not be present
+    assert "<!-- INDEX_TAG -->" not in xml_content
+    assert (
+        "<!-- SHIMDB_INDEX_UNIQUE_KEY | SHIMDB_INDEX_TRAILING_CHARACTERS -->"
+        not in xml_content
+    )
+    # The tag should be exactly like this
+    assert '<INDEX_TAG type="xs:unsignedShort">14338</INDEX_TAG>' in xml_content
 
 
 def test_tagtype_to_xmltype():
@@ -109,7 +139,9 @@ def test_XmlTagVisitor_invalid_visit(monkeypatch):
 
     monkeypatch.setattr(winapi, "SdbOpenDatabase", mock_SdbOpenDatabase)
 
-    visitor = XmlTagVisitor(io.StringIO(), "test.sdb", exclude_tags=[])
+    visitor = XmlTagVisitor(
+        io.StringIO(), "test.sdb", exclude_tags=[], annotations=Annotations.Comment
+    )
     db = SdbDatabase("test.sdb", PathType.DOS_PATH)
     tag = Tag(db=db, tag_id=TAGID_ROOT)  #
     tag.type = TagType.LIST  # Invalid type for visit method

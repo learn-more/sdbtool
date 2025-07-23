@@ -15,6 +15,12 @@ from sdbtool.apphelp import (
 )
 from sdbtool.xml import XmlWriter
 from pathlib import Path
+import enum
+
+
+class Annotations(enum.Enum):
+    Disabled = enum.auto()
+    Comment = enum.auto()
 
 
 def tagtype_to_xmltype(tag_type: TagType) -> str | None:
@@ -31,12 +37,13 @@ def tagtype_to_xmltype(tag_type: TagType) -> str | None:
 
 
 class XmlTagVisitor(TagVisitor):
-    def __init__(self, stream, input_filename: str, exclude_tags: list[str]):
+    def __init__(self, stream, input_filename: str, exclude_tags: list[str], annotations: Annotations):
         """Initialize the XML tag visitor with a filename."""
         self.writer = XmlWriter(stream)
         self._first = True
         self._input_filename = input_filename
         self._exclude_tags = exclude_tags
+        self._annotations = annotations
         self._skip_depth = 0
 
     def visit_list_begin(self, tag: Tag):
@@ -89,16 +96,16 @@ class XmlTagVisitor(TagVisitor):
     def _write_tag_value(self, tag: Tag):
         value, comment = tag_value_to_string(tag)
         self.writer.write(value)
-        if comment is not None:
+        if self._annotations == Annotations.Comment and comment is not None:
             self.writer.write_comment(comment)
 
 
-def convert(input_file: str, output_stream, exclude_tags: list[str]):
+def convert(input_file: str, output_stream, exclude_tags: list[str], annotations: Annotations):
     with SdbDatabase(input_file, PathType.DOS_PATH) as db:
         if not db:
             raise FileNotFoundError(f"Failed to open database at '{input_file}'")
 
-        visitor = XmlTagVisitor(output_stream, Path(input_file).name, exclude_tags)
+        visitor = XmlTagVisitor(output_stream, Path(input_file).name, exclude_tags, annotations)
         root = db.root()
         assert root is not None, (
             "This is impossible, otherwise the previous exception would have been raised."
