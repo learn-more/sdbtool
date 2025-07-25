@@ -34,3 +34,9 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           env_vars: UV_PYTHON_VERSION
           files: ./coverage.xml
+
+      - name: Validate sdbtool command with python ${{ matrix.python-version }}
+        run: uv run --frozen sdbtool --help
+
+      - name: Validate sdb2xml command with python ${{ matrix.python-version }}
+        run: uv run --frozen sdb2xml --help
