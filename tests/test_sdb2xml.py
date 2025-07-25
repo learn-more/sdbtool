@@ -8,7 +8,7 @@ COPYRIGHT:   Copyright 2025 Mark Jansen <mark.jansen@reactos.org>
 import io
 from pathlib import Path
 from sdbtool.sdb2xml import (
-    Annotations,
+    XmlAnnotations,
     XmlTagVisitor,
     convert as sdb2xml_convert,
     tagtype_to_xmltype,
@@ -69,7 +69,7 @@ def test_database():
         str(TESTDATA_FOLDER / "all_tagtypes.sdb"),
         output,
         exclude_tags=[],
-        annotations=Annotations.Comment,
+        annotations=XmlAnnotations.Comment,
     )
     output.seek(0)
     xml_content = output.read()
@@ -82,7 +82,7 @@ def test_database_with_exclude_tags():
         str(TESTDATA_FOLDER / "all_tagtypes.sdb"),
         output,
         exclude_tags=["PATCH", "APP", "BIN_FILE_VERSION", "TIME"],
-        annotations=Annotations.Comment,
+        annotations=XmlAnnotations.Comment,
     )
     output.seek(0)
     xml_content = output.read()
@@ -97,7 +97,7 @@ def test_invalid_database():
             str(TESTDATA_FOLDER / "non_existent.sdb"),
             io.StringIO(),
             exclude_tags=[],
-            annotations=Annotations.Comment,
+            annotations=XmlAnnotations.Comment,
         )
 
 
@@ -107,7 +107,7 @@ def test_annotations():
         str(TESTDATA_FOLDER / "all_tagtypes.sdb"),
         output,
         exclude_tags=[],
-        annotations=Annotations.Disabled,
+        annotations=XmlAnnotations.Disabled,
     )
     output.seek(0)
     xml_content = output.read()
@@ -140,7 +140,7 @@ def test_XmlTagVisitor_invalid_visit(monkeypatch):
     monkeypatch.setattr(winapi, "SdbOpenDatabase", mock_SdbOpenDatabase)
 
     visitor = XmlTagVisitor(
-        io.StringIO(), "test.sdb", exclude_tags=[], annotations=Annotations.Comment
+        io.StringIO(), "test.sdb", exclude_tags=[], annotations=XmlAnnotations.Comment
     )
     db = SdbDatabase("test.sdb", PathType.DOS_PATH)
     tag = Tag(db=db, tag_id=TAGID_ROOT)  #

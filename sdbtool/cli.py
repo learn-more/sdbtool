@@ -6,7 +6,7 @@ COPYRIGHT:   Copyright 2025 Mark Jansen <mark.jansen@reactos.org>
 """
 
 import sys
-from sdbtool.sdb2xml import convert as sdb2xml_convert, Annotations
+from sdbtool.sdb2xml import convert as sdb2xml_convert, XmlAnnotations
 from sdbtool.attributes import get_attributes
 import click
 
@@ -45,10 +45,12 @@ def sdbtool_command():
 )
 @click.option(
     "--annotations",
-    type=click.Choice(Annotations, case_sensitive=False),
-    default=Annotations.Comment,
-    show_default=True,
-    help="Specify the type of annotations to include in the XML output: 'Disabled' - no annotations. 'Comment' - annotations as comments.",
+    type=click.Choice(XmlAnnotations, case_sensitive=False),
+    default=XmlAnnotations.Comment,
+    show_default=False,
+    help="Specify the type of annotations to include in the XML output [default: Comment]\n"
+    " - Disabled: no annotations.\n"
+    " - Comment: annotations as comments.",
 )
 def sdb2xml_command(input_file, output, exclude, annotations):
     """Convert an SDB file to XML format."""
