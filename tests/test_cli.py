@@ -7,7 +7,8 @@ COPYRIGHT:   Copyright 2025 Mark Jansen <mark.jansen@reactos.org>
 
 import click
 from click.testing import CliRunner
-import sdbtool.cli
+import sdbtool.cli.attributes
+import sdbtool.cli.sdb2xml
 from sdbtool.cli import sdbtool_command
 
 
@@ -29,7 +30,7 @@ def test_noargs():
 
 def test_sdb2xml_command(tmp_path, monkeypatch):
     monkeypatch.setattr(
-        sdbtool.cli,
+        sdbtool.cli.sdb2xml,
         "sdb2xml_convert",
         lambda input_file, output_stream, exclude_tags, annotations: click.echo(
             f"nop:{exclude_tags}"
@@ -58,7 +59,7 @@ def test_sdb2xml_exception(tmp_path, monkeypatch):
     def raise_value_error(*args, **kwargs):
         raise ValueError("Test error")
 
-    monkeypatch.setattr(sdbtool.cli, "sdb2xml_convert", raise_value_error)
+    monkeypatch.setattr(sdbtool.cli.sdb2xml, "sdb2xml_convert", raise_value_error)
     runner = CliRunner()
     with runner.isolated_filesystem(tmp_path):
         with open("test.sdb", "w") as f:
@@ -78,7 +79,7 @@ def test_attributes_command(tmp_path, monkeypatch):
             raise ValueError("Test Error")
         return []
 
-    monkeypatch.setattr(sdbtool.cli, "get_attributes", mock_get_attributes)
+    monkeypatch.setattr(sdbtool.cli.attributes, "get_attributes", mock_get_attributes)
     runner = CliRunner()
     with runner.isolated_filesystem(tmp_path):
         with open("test1.sdb", "w") as f:
