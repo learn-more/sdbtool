@@ -7,9 +7,7 @@ COPYRIGHT:   Copyright 2025 Mark Jansen <mark.jansen@reactos.org>
 
 import click
 from click.testing import CliRunner
-import sdbtool.cli.attributes
-import sdbtool.cli.sdb2xml
-import sdbtool.cli.info
+from sdbtool.cli import attributes, sdb2xml, info, gui
 from sdbtool.cli import sdbtool_command
 from sdbtool.info import DatabaseInformation
 from uuid import UUID
@@ -33,7 +31,7 @@ def test_noargs():
 
 def test_sdb2xml_command(tmp_path, monkeypatch):
     monkeypatch.setattr(
-        sdbtool.cli.sdb2xml,
+        sdb2xml,
         "sdb2xml_convert",
         lambda input_file, output_stream, exclude_tags, annotations: click.echo(
             f"nop:{exclude_tags}"
@@ -62,7 +60,7 @@ def test_sdb2xml_exception(tmp_path, monkeypatch):
     def raise_value_error(*args, **kwargs):
         raise ValueError("Test error")
 
-    monkeypatch.setattr(sdbtool.cli.sdb2xml, "sdb2xml_convert", raise_value_error)
+    monkeypatch.setattr(sdb2xml, "sdb2xml_convert", raise_value_error)
     runner = CliRunner()
     with runner.isolated_filesystem(tmp_path):
         with open("test.sdb", "w") as f:
@@ -82,7 +80,7 @@ def test_attributes_command(tmp_path, monkeypatch):
             raise ValueError("Test Error")
         return []
 
-    monkeypatch.setattr(sdbtool.cli.attributes, "get_attributes", mock_get_attributes)
+    monkeypatch.setattr(attributes, "get_attributes", mock_get_attributes)
     runner = CliRunner()
     with runner.isolated_filesystem(tmp_path):
         with open("test1.sdb", "w") as f:
@@ -126,7 +124,7 @@ def test_info_command(tmp_path, monkeypatch):
             )
         raise ValueError("Test Error")
 
-    monkeypatch.setattr(sdbtool.cli.info, "get_info", mock_get_info)
+    monkeypatch.setattr(info, "get_info", mock_get_info)
     runner = CliRunner()
     with runner.isolated_filesystem(tmp_path):
         with open("test1.sdb", "w") as f:
@@ -156,3 +154,24 @@ def test_info_command(tmp_path, monkeypatch):
         result = runner.invoke(sdbtool_command, ["info", "test3.sdb"])
         assert result.exit_code == 0
         assert "Error getting info for test3.sdb: Test Error" in result.output
+
+
+def test_gui_command(tmp_path, monkeypatch):
+    def mock_show_gui(input_file):
+        if not input_file.endswith(".sdb"):
+            raise FileNotFoundError(f"File {input_file} does not exist.")
+        click.echo(f"GUI launched {input_file}.")
+
+    monkeypatch.setattr(gui, "show_gui", mock_show_gui)
+    runner = CliRunner()
+    with runner.isolated_filesystem(tmp_path):
+        with open("test.sdb", "w") as f:
+            f.write("This is a test SDB file.")
+        with open("test.nope", "w") as f:
+            f.write("This is a test SDB file.")
+        result = runner.invoke(sdbtool_command, ["gui", "test.sdb"])
+        assert result.exit_code == 0
+        assert "GUI launched test.sdb." in result.output
+        result = runner.invoke(sdbtool_command, ["gui", "test.nope"])
+        assert result.exit_code == 1
+        assert "Error launching GUI: File test.nope does not exist." in result.output

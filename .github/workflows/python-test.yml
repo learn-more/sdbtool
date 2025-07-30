@@ -43,3 +43,6 @@ jobs:
 
       - name: Validate sdbinfo command with python ${{ matrix.python-version }}
         run: uv run --frozen sdbinfo --help
+
+      - name: Validate sdbgui command with python ${{ matrix.python-version }}
+        run: uv run --frozen sdbgui --help

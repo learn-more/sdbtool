@@ -1,6 +1,6 @@
 [project]
 name = "sdbtool"
-version = "0.6.0"
+version = "0.7.0"
 description = "Interact with .sdb files using apphelp.dll"
 readme = "README.md"
 license = "MIT"
@@ -35,6 +35,7 @@ Repository = "https://github.com/learn-more/sdbtool"
 sdbtool = "sdbtool.cli:sdbtool_command"
 sdb2xml = "sdbtool.cli:sdb2xml_command"
 sdbinfo = "sdbtool.cli:info_command"
+sdbgui = "sdbtool.cli:gui_command"
 
 [build-system]
 requires = ["hatchling"]

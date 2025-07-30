@@ -54,6 +54,8 @@ class PlatformType(IntFlag):
     ARM64 = 0x10
 
 
+TAG_DATABASE = 0x1 | TagType.LIST
+
 TAG_INDEX_TAG = 0x802 | TagType.WORD
 TAG_INDEX_KEY = 0x803 | TagType.WORD
 
