@@ -34,6 +34,7 @@ Repository = "https://github.com/learn-more/sdbtool"
 [project.scripts]
 sdbtool = "sdbtool.cli:sdbtool_command"
 sdb2xml = "sdbtool.cli:sdb2xml_command"
+sdbinfo = "sdbtool.cli:info_command"
 
 [build-system]
 requires = ["hatchling"]

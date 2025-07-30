@@ -39,6 +39,7 @@ Invoke sdbtool directly with [`uvx`](https://docs.astral.sh/uv/):
 uvx sdbtool sdb2xml your.sdb                    # Convert the file 'your.sdb' to xml, and print it to the console
 uvx sdbtool sdb2xml your.sdb --output your.xml  # Convert the file 'your.sdb' to xml, and write it to 'your.xml'
 uvx sdbtool attributes your.exe                 # Show the file attributes as recognized by apphelp in an XML-friendly format
+uvx sdbtool info your.sdb                       # Show some details about the SDB file (version, description, ...)
 ```
 
 Or install sdbtool with `uv` (recommended), `pip`, or `pipx`:

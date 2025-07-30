@@ -40,3 +40,6 @@ jobs:
 
       - name: Validate sdb2xml command with python ${{ matrix.python-version }}
         run: uv run --frozen sdb2xml --help
+
+      - name: Validate sdbinfo command with python ${{ matrix.python-version }}
+        run: uv run --frozen sdbinfo --help

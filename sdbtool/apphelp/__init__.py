@@ -8,6 +8,7 @@ COPYRIGHT:   Copyright 2025 Mark Jansen <mark.jansen@reactos.org>
 from ctypes import c_void_p
 from enum import IntEnum, IntFlag
 from base64 import b64encode
+from uuid import UUID
 import sdbtool.apphelp.winapi as apphelp
 from datetime import datetime, timezone
 from abc import ABC, abstractmethod
@@ -126,24 +127,10 @@ def tag_value_to_string(tag: "Tag") -> tuple[str, str | None]:
         if data:
             base64_data = b64encode(data).decode("utf-8")
             if tag.name.endswith("_ID") and len(data) == 16:
-                guid_str = guid_to_string(data)
-                return base64_data, f"{{{guid_str}}}"
+                return base64_data, f"{{{UUID(bytes_le=data)}}}"
             return base64_data, None
         return "", None
     raise ValueError(f"Unknown tag type: {tag.type.name} for tag {tag.name}")
-
-
-def guid_to_string(guid: bytes) -> str:
-    """Converts a GUID (16-byte binary) to its string representation."""
-    if len(guid) != 16:
-        raise ValueError("GUID must be 16 bytes long")
-    return (
-        f"{guid[3]:02x}{guid[2]:02x}{guid[1]:02x}{guid[0]:02x}-"
-        f"{guid[5]:02x}{guid[4]:02x}-"
-        f"{guid[7]:02x}{guid[6]:02x}-"
-        f"{guid[8]:02x}{guid[9]:02x}-"
-        f"{guid[10]:02x}{guid[11]:02x}{guid[12]:02x}{guid[13]:02x}{guid[14]:02x}{guid[15]:02x}"
-    )
 
 
 def _filetime_to_string(filetime: int) -> str:

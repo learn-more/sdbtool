@@ -156,6 +156,36 @@ APPHELP.SdbReleaseMatchingExe.argtypes = [c_void_p, c_uint32]
 APPHELP.SdbReleaseMatchingExe.restype = None
 
 
+DB_INFO_FLAGS_VALID_GUID = 1
+
+class SDBDATABASEINFO(Structure):
+    _fields_ = [
+        ("dwFlags", c_uint32),  # DB_INFO_FLAGS_VALID_GUID
+        ("dwMajor", c_uint32),
+        ("dwMinor", c_uint32),
+        ("Description", c_wchar_p),
+        ("Id", c_uint8 * 16),  # GUID is 16 bytes
+        ("dwRuntimePlatform", c_uint32),
+    ]
+
+# BOOL WINAPI SdbGetDatabaseInformationByName(
+#   _In_  LPCTSTR   lpwszFileName,
+#   _Out_ PSDBDATABASEINFO *ppAttrInfo,
+# );
+APPHELP.SdbGetDatabaseInformationByName.argtypes = [
+    c_wchar_p,
+    POINTER(POINTER(SDBDATABASEINFO)),
+]
+APPHELP.SdbGetDatabaseInformationByName.restype = c_uint32
+
+# BOOL WINAPI SdbFreeDatabaseInformation(
+#   _In_ PSDBDATABASEINFO pFileAttributes
+# );
+APPHELP.SdbFreeDatabaseInformation.argtypes = [c_void_p]
+APPHELP.SdbFreeDatabaseInformation.restype = c_uint32
+
+
+
 def SdbOpenDatabase(path: str, path_type: int) -> c_void_p:
     """Open a database at the specified path."""
     return APPHELP.SdbOpenDatabase(path, path_type)
@@ -263,3 +293,16 @@ def SdbFormatAttribute(attr_info: ATTRINFO) -> str:
 def SdbFreeFileAttributes(attr_info):
     """Free the file attributes structure."""
     APPHELP.SdbFreeFileAttributes(attr_info)
+
+
+def GetDatabaseInformationByName(file_name: str):
+    """Get database information for the specified file."""
+    db_info = POINTER(SDBDATABASEINFO)()
+    result = APPHELP.SdbGetDatabaseInformationByName(file_name, byref(db_info))
+    if result == 0:
+        raise ValueError(f"Failed to get database information for '{file_name}'")
+    return db_info
+
+def SdbFreeDatabaseInformation(db_info):
+    """Free the database information structure."""
+    APPHELP.SdbFreeDatabaseInformation(db_info)

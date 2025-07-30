@@ -7,6 +7,7 @@ COPYRIGHT:   Copyright 2025 Mark Jansen <mark.jansen@reactos.org>
 
 from sdbtool.cli.sdb2xml import command as sdb2xml_command
 from sdbtool.cli.attributes import command as attributes_command
+from sdbtool.cli.info import command as info_command
 import click
 
 
@@ -28,3 +29,4 @@ def sdbtool_command():
 
 sdbtool_command.add_command(sdb2xml_command)
 sdbtool_command.add_command(attributes_command)
+sdbtool_command.add_command(info_command)
