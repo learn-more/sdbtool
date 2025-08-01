@@ -34,8 +34,10 @@ from sdbtool.sdb2xml import convert as sdb2xml_convert, XmlAnnotations
     " - Disabled: no annotations.\n"
     " - Comment: annotations as comments.",
 )
+@click.option('--tagid/--no-tagid', default=False, help="Include tagids (index in the database) in the XML output.")
+@click.option('--tag/--no-tag', default=False, help="Include tag number in the XML output.")
 @click.pass_context
-def command(ctx, input_file, output, exclude, annotations):
+def command(ctx, input_file, output, exclude, annotations, tagid, tag):
     """Convert an SDB file to XML format."""
     try:
         exclude = [c.strip() for c in exclude.split(",") if c.strip()]
@@ -47,6 +49,8 @@ def command(ctx, input_file, output, exclude, annotations):
             output_stream=output,
             exclude_tags=exclude,
             annotations=annotations,
+            with_tagid=tagid,
+            with_tag=tag,
         )
     except Exception as e:
         click.echo(f"Error converting SDB to XML: {e}")

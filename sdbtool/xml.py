@@ -45,10 +45,14 @@ class XmlWriter:
         self._stream.write(f"</{name}>")
         self._indent_on_close = True
 
-    def empty_tag(self, name):
+    def empty_tag(self, name, attrib=None):
         """Write an empty XML tag with the given name and attributes."""
         self._indent()
-        self._stream.write(f"<{name} />")
+        self._stream.write(f"<{name}")
+        if attrib:
+            for key, value in attrib.items():
+                self._stream.write(f" {key}={quoteattr(value)}")
+        self._stream.write(" />")
         self._indent_on_close = True
 
     def write(self, text):

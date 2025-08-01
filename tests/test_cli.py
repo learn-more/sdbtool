@@ -33,9 +33,12 @@ def test_sdb2xml_command(tmp_path, monkeypatch):
     monkeypatch.setattr(
         sdb2xml,
         "sdb2xml_convert",
-        lambda input_file, output_stream, exclude_tags, annotations: click.echo(
-            f"nop:{exclude_tags}"
-        ),
+        lambda input_file,
+        output_stream,
+        exclude_tags,
+        annotations,
+        with_tagid,
+        with_tag: click.echo(f"nop:{exclude_tags}"),
     )
     runner = CliRunner()
     with runner.isolated_filesystem(tmp_path):

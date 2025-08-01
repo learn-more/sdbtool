@@ -43,6 +43,8 @@ class XmlTagVisitor(TagVisitor):
         input_filename: str,
         exclude_tags: list[str],
         annotations: XmlAnnotations,
+        with_tagid: bool,
+        with_tag: bool,
     ):
         """Initialize the XML tag visitor with a filename."""
         self.writer = XmlWriter(stream)
@@ -50,6 +52,8 @@ class XmlTagVisitor(TagVisitor):
         self._input_filename = input_filename
         self._exclude_tags = exclude_tags
         self._annotations = annotations
+        self._with_tagid = with_tagid
+        self._with_tag = with_tag
         self._skip_depth = 0
 
     def visit_list_begin(self, tag: Tag):
@@ -58,7 +62,6 @@ class XmlTagVisitor(TagVisitor):
             self._skip_depth += 1
         if self._skip_depth > 0:
             return
-        attrs = None
         if self._first:
             self._first = False
             self.writer.write_xml_declaration()
@@ -66,6 +69,12 @@ class XmlTagVisitor(TagVisitor):
                 "xmlns:xs": "http://www.w3.org/2001/XMLSchema",
                 "file": self._input_filename,
             }
+        else:
+            attrs = {}
+            if self._with_tagid:
+                attrs["tagid"] = f"{tag.tag_id}"
+            if self._with_tag:
+                attrs["tag"] = f"0x{tag.tag:x}"
         self.writer.open(tag.name, attrs)
 
     def visit_list_end(self, tag: Tag):
@@ -82,18 +91,24 @@ class XmlTagVisitor(TagVisitor):
             return
         if tag.name in self._exclude_tags:
             return
+
+        ids = {}
+        if self._with_tagid:
+            ids["tagid"] = f"{tag.tag_id}"
+        if self._with_tag:
+            ids["tag"] = f"0x{tag.tag:x}"
+
         if tag.type == TagType.NULL:
-            self.writer.empty_tag(tag.name)
+            self.writer.empty_tag(tag.name, ids)
             return
 
-        attrs = {}
         typename = tagtype_to_xmltype(tag.type)
-        if typename is not None:
-            attrs["type"] = typename
-        else:
+        if typename is None:
             raise ValueError(
                 f"Unknown xml tag type: {tag.type.name} for tag {tag.name}"
             )
+        attrs = {"type": typename}
+        attrs.update(ids)
 
         self.writer.open(tag.name, attrs)
         self._write_tag_value(tag)
@@ -107,14 +122,24 @@ class XmlTagVisitor(TagVisitor):
 
 
 def convert(
-    input_file: str, output_stream, exclude_tags: list[str], annotations: XmlAnnotations
+    input_file: str,
+    output_stream,
+    exclude_tags: list[str],
+    annotations: XmlAnnotations,
+    with_tagid: bool,
+    with_tag: bool,
 ):
     with SdbDatabase(input_file, PathType.DOS_PATH) as db:
         if not db:
             raise FileNotFoundError(f"Failed to open database at '{input_file}'")
 
         visitor = XmlTagVisitor(
-            output_stream, Path(input_file).name, exclude_tags, annotations
+            output_stream,
+            Path(input_file).name,
+            exclude_tags,
+            annotations,
+            with_tagid=with_tagid,
+            with_tag=with_tag,
         )
         root = db.root()
         assert root is not None, (

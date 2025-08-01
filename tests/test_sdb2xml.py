@@ -63,6 +63,26 @@ ALL_TAGS_RESULT = """<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 </SDB>"""
 
 
+STRIPPED_TAG_TAGID_RESULT = """<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<SDB xmlns:xs="http://www.w3.org/2001/XMLSchema" file="all_tagtypes.sdb">
+  <DATABASE tagid="12" tag="0x7001">
+    <DATABASE tagid="78" tag="0x7001"></DATABASE>
+    <INCLUDE tagid="84" tag="0x1001" />
+    <MATCH_MODE type="xs:unsignedShort" tagid="90" tag="0x3001">0</MATCH_MODE>
+    <SIZE type="xs:unsignedInt" tagid="94" tag="0x4001">0</SIZE>
+    <BIN_FILE_VERSION type="xs:unsignedLong" tagid="100" tag="0x5002">0</BIN_FILE_VERSION>
+    <NAME type="xs:string" tagid="138" tag="0x6001"></NAME>
+    <LIBRARY tagid="144" tag="0x7002">
+      <INDEX_TAG type="xs:unsignedShort" tagid="150" tag="0x3802">14338</INDEX_TAG>
+      <INDEX_KEY type="xs:unsignedShort" tagid="154" tag="0x3803">14339</INDEX_KEY>
+      <INDEX_FLAGS type="xs:unsignedInt" tagid="158" tag="0x4016">3</INDEX_FLAGS>
+      <GUEST_TARGET_PLATFORM type="xs:unsignedInt" tagid="164" tag="0x4023">17</GUEST_TARGET_PLATFORM>
+      <RUNTIME_PLATFORM type="xs:unsignedInt" tagid="170" tag="0x4021">34</RUNTIME_PLATFORM>
+    </LIBRARY>
+  </DATABASE>
+</SDB>"""
+
+
 def test_database():
     output = io.StringIO()
     sdb2xml_convert(
@@ -70,6 +90,8 @@ def test_database():
         output,
         exclude_tags=[],
         annotations=XmlAnnotations.Comment,
+        with_tagid=False,
+        with_tag=False,
     )
     output.seek(0)
     xml_content = output.read()
@@ -83,6 +105,8 @@ def test_database_with_exclude_tags():
         output,
         exclude_tags=["PATCH", "APP", "BIN_FILE_VERSION", "TIME"],
         annotations=XmlAnnotations.Comment,
+        with_tagid=False,
+        with_tag=False,
     )
     output.seek(0)
     xml_content = output.read()
@@ -98,6 +122,8 @@ def test_invalid_database():
             io.StringIO(),
             exclude_tags=[],
             annotations=XmlAnnotations.Comment,
+            with_tagid=False,
+            with_tag=False,
         )
 
 
@@ -108,6 +134,8 @@ def test_annotations():
         output,
         exclude_tags=[],
         annotations=XmlAnnotations.Disabled,
+        with_tagid=False,
+        with_tag=False,
     )
     output.seek(0)
     xml_content = output.read()
@@ -140,7 +168,12 @@ def test_XmlTagVisitor_invalid_visit(monkeypatch):
     monkeypatch.setattr(winapi, "SdbOpenDatabase", mock_SdbOpenDatabase)
 
     visitor = XmlTagVisitor(
-        io.StringIO(), "test.sdb", exclude_tags=[], annotations=XmlAnnotations.Comment
+        io.StringIO(),
+        "test.sdb",
+        exclude_tags=[],
+        annotations=XmlAnnotations.Comment,
+        with_tagid=False,
+        with_tag=False,
     )
     db = SdbDatabase("test.sdb", PathType.DOS_PATH)
     tag = Tag(db=db, tag_id=TAGID_ROOT)  #
@@ -148,3 +181,18 @@ def test_XmlTagVisitor_invalid_visit(monkeypatch):
     tag.name = "TestTag"
     with pytest.raises(ValueError, match="Unknown xml tag type: LIST for tag TestTag"):
         visitor.visit(tag)
+
+
+def test_db_with_tagid_and_tag():
+    output = io.StringIO()
+    sdb2xml_convert(
+        str(TESTDATA_FOLDER / "all_tagtypes.sdb"),
+        output,
+        exclude_tags=["PATCH", "InvalidTag"],
+        annotations=XmlAnnotations.Disabled,
+        with_tagid=True,
+        with_tag=True,
+    )
+    output.seek(0)
+    xml_content = output.read()
+    assert xml_content == STRIPPED_TAG_TAGID_RESULT
