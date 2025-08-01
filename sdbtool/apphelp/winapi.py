@@ -22,6 +22,8 @@ from ctypes import (
     Union,
 )
 
+from sdbtool.apphelp.tags.Win10 import tag_id_to_string
+
 APPHELP = windll.apphelp
 
 # PDB WINAPI SdbOpenDatabase(LPCWSTR path, PATH_TYPE type);
@@ -42,10 +44,6 @@ APPHELP.SdbGetNextChild.restype = c_uint32
 # TAG WINAPI SdbGetTagFromTagID(PDB pdb, TAGID tagid);
 APPHELP.SdbGetTagFromTagID.argtypes = [c_void_p, c_uint32]
 APPHELP.SdbGetTagFromTagID.restype = c_uint16
-
-# LPCWSTR WINAPI SdbTagToString(TAG tag);
-APPHELP.SdbTagToString.argtypes = [c_uint16]
-APPHELP.SdbTagToString.restype = c_wchar_p
 
 # BYTE WINAPI SdbReadBYTETag(PDB pdb, TAGID tagid, BYTE ret);
 APPHELP.SdbReadBYTETag.argtypes = [c_void_p, c_uint32, c_uint8]
@@ -158,6 +156,7 @@ APPHELP.SdbReleaseMatchingExe.restype = None
 
 DB_INFO_FLAGS_VALID_GUID = 1
 
+
 class SDBDATABASEINFO(Structure):
     _fields_ = [
         ("dwFlags", c_uint32),  # DB_INFO_FLAGS_VALID_GUID
@@ -167,6 +166,7 @@ class SDBDATABASEINFO(Structure):
         ("Id", c_uint8 * 16),  # GUID is 16 bytes
         ("dwRuntimePlatform", c_uint32),
     ]
+
 
 # BOOL WINAPI SdbGetDatabaseInformationByName(
 #   _In_  LPCTSTR   lpwszFileName,
@@ -183,7 +183,6 @@ APPHELP.SdbGetDatabaseInformationByName.restype = c_uint32
 # );
 APPHELP.SdbFreeDatabaseInformation.argtypes = [c_void_p]
 APPHELP.SdbFreeDatabaseInformation.restype = c_uint32
-
 
 
 def SdbOpenDatabase(path: str, path_type: int) -> c_void_p:
@@ -209,25 +208,6 @@ def SdbGetNextChild(db: c_void_p, parent: int, prev_child: int) -> int:
 def SdbGetTagFromTagID(db: c_void_p, tag_id: int) -> int:
     """Get the tag from the specified tag ID."""
     return APPHELP.SdbGetTagFromTagID(db, tag_id)
-
-
-def SdbTagToString(tag: int) -> str:
-    """Convert a tag to its string representation."""
-    name = APPHELP.SdbTagToString(tag)
-    # Some temp hacks here until we handle fallback / tag to string properly (#18)
-    if tag == 0x7054 and name == "InvalidTag":
-        return "BACKUP_FILE"
-    elif tag == 0x7055 and name == "InvalidTag":
-        return "BACKUP_APPLICATION"
-    elif tag == 0x7056 and name == "InvalidTag":
-        return "BACKUP_PACKAGE"
-    elif tag == 0x7077 and name == "InvalidTag":
-        return "RESTORE_FILE"
-    elif tag == 0x7078 and name == "InvalidTag":
-        return "RESTORE_APPLICATION"
-    elif tag == 0x7079 and name == "InvalidTag":
-        return "RESTORE_PACKAGE"
-    return name
 
 
 def SdbReadBYTETag(db: c_void_p, tag_id: int, default: int = 0) -> int:
@@ -285,7 +265,7 @@ def SdbFormatAttribute(attr_info: ATTRINFO) -> str:
     buffer = create_unicode_buffer(buffer_size)
     result = APPHELP.SdbFormatAttribute(pointer(attr_info), buffer, buffer_size)
     if result == 0:
-        name = SdbTagToString(attr_info.tAttrID)
+        name = tag_id_to_string(attr_info.tAttrID)
         raise ValueError(f"Failed to format attribute ({name})")
     return buffer.value if buffer.value else ""
 
@@ -302,6 +282,7 @@ def GetDatabaseInformationByName(file_name: str):
     if result == 0:
         raise ValueError(f"Failed to get database information for '{file_name}'")
     return db_info
+
 
 def SdbFreeDatabaseInformation(db_info):
     """Free the database information structure."""

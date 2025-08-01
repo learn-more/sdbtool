@@ -9,10 +9,10 @@ from ctypes import c_void_p
 from enum import IntEnum, IntFlag
 from base64 import b64encode
 from uuid import UUID
-import sdbtool.apphelp.winapi as apphelp
+from . import winapi as apphelp
 from datetime import datetime, timezone
 from abc import ABC, abstractmethod
-
+from .tags import Win10Tags as Tags, tag_id_to_string
 
 TAG_NULL = 0x0
 TAGID_NULL = 0x0
@@ -54,31 +54,9 @@ class PlatformType(IntFlag):
     ARM64 = 0x10
 
 
-TAG_DATABASE = 0x1 | TagType.LIST
-
-TAG_INDEX_TAG = 0x802 | TagType.WORD
-TAG_INDEX_KEY = 0x803 | TagType.WORD
-
-
-TAG_INDEX_FLAGS = 0x16 | TagType.DWORD
-TAG_RUNTIME_PLATFORM = 0x21 | TagType.DWORD
-TAG_OS_PLATFORM = 0x23 | TagType.DWORD  # AKA GUEST_TARGET_PLATFORM
-
-TAG_TIME = 0x1 | TagType.QWORD
-
-TAG_LINK_DATE = 0x1D | TagType.DWORD
-TAG_UPTO_LINK_DATE = 0x1E | TagType.DWORD
-TAG_FROM_LINK_DATE = 0x33 | TagType.DWORD
-
-
 def get_tag_type(tag: int) -> TagType:
     """Extracts the type from a tag."""
     return TagType(tag & TagType.MASK)
-
-
-def tag_id_to_string(tag: int) -> str:
-    """Converts a tag to its string representation."""
-    return apphelp.SdbTagToString(tag)
 
 
 def _value_to_flags(value: int, flags: type[IntFlag]) -> str:
@@ -98,18 +76,19 @@ def tag_value_to_string(tag: "Tag") -> tuple[str, str | None]:
         return f"{tag.read_byte()}", None
     elif tag.type == TagType.WORD:
         value = tag.read_word()
-        if tag.tag in (TAG_INDEX_TAG, TAG_INDEX_KEY):
+        if tag.tag in (Tags.INDEX_TAG, Tags.INDEX_KEY):
             return f"{value}", f"{tag_id_to_string(value)}"
         return f"{value}", None
     elif tag.type == TagType.DWORD:
         value = tag.read_dword()
         comment = None
-        if tag.tag in (TAG_INDEX_FLAGS,):
+        if tag.tag in (Tags.INDEX_FLAGS,):
             comment = _value_to_flags(value, IndexFlags)
-        elif tag.tag in (TAG_OS_PLATFORM, TAG_RUNTIME_PLATFORM):
+        elif tag.tag in (Tags.GUEST_TARGET_PLATFORM, Tags.RUNTIME_PLATFORM):
+            # GUEST_TARGET_PLATFORM is known as TAG_OS_PLATFORM in older versions
             comment = _value_to_flags(value, PlatformType)
         elif (
-            tag.tag in (TAG_LINK_DATE, TAG_UPTO_LINK_DATE, TAG_FROM_LINK_DATE)
+            tag.tag in (Tags.LINK_DATE, Tags.UPTO_LINK_DATE, Tags.FROM_LINK_DATE)
             and value != 0
         ):
             dt = datetime.fromtimestamp(value, tz=timezone.utc)
@@ -118,7 +97,7 @@ def tag_value_to_string(tag: "Tag") -> tuple[str, str | None]:
     elif tag.type == TagType.QWORD:
         comment = None
         value = tag.read_qword()
-        if tag.tag == TAG_TIME and value != 0:
+        if tag.tag == Tags.TIME and value != 0:
             comment = _filetime_to_string(value)
         return f"{value}", comment
     elif tag.type in (TagType.STRINGREF, TagType.STRING):
@@ -158,7 +137,7 @@ class Tag:
             self.type = TagType.LIST
         else:
             self.tag = apphelp.SdbGetTagFromTagID(self._ensure_db_handle(), tag_id)
-            self.name = apphelp.SdbTagToString(self.tag)
+            self.name = tag_id_to_string(self.tag)
             self.type = get_tag_type(self.tag)
 
     def _ensure_db_handle(self) -> c_void_p:

@@ -7,7 +7,7 @@ COPYRIGHT:   Copyright 2025 Mark Jansen <mark.jansen@reactos.org>
 
 from sdbtool.apphelp import (
     TAG_NULL,
-    TAG_DATABASE,
+    Tags,
     PathType,
     SdbDatabase,
     TagVisitor,
@@ -28,7 +28,7 @@ class GuiTagVisitor(TagVisitor):
     def visit_list_begin(self, tag: Tag):
         """Visit the beginning of a list tag."""
         parent_node = self._nodes[-1] if self._nodes else ""
-        open = tag.tag in (TAG_NULL, TAG_DATABASE)
+        open = tag.tag in (TAG_NULL, Tags.DATABASE)
         node = self._treeview.insert(parent_node, tk.END, text=tag.name, open=open)
         self._nodes.append(node)
 

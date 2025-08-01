@@ -11,25 +11,8 @@ from sdbtool.apphelp.winapi import (
     APPHELP,
     ATTRINFO,
     SdbFormatAttribute,
-    SdbTagToString,
     SdbReadBinaryTag,
 )
-
-
-def test_SdbTagToString_fallback(monkeypatch):
-    monkeypatch.setattr(APPHELP, "SdbTagToString", lambda tag: "InvalidTag")
-
-    # First check that the fallback works for these tags
-    fallback_tags = [0x7054, 0x7055, 0x7056, 0x7077, 0x7078, 0x7079]
-    for tag in fallback_tags:
-        assert SdbTagToString(tag) != "InvalidTag"
-
-    assert APPHELP.SdbTagToString(0x1234) == "InvalidTag"
-
-    # Now check that the fallback does not kick in when the tag is valid
-    monkeypatch.setattr(APPHELP, "SdbTagToString", lambda tag: "ValidTag")
-    for tag in fallback_tags:
-        assert SdbTagToString(tag) == "ValidTag"
 
 
 def test_SdbReadBinaryTag_fails(monkeypatch):
