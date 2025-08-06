@@ -6,7 +6,6 @@ COPYRIGHT:   Copyright 2025 Mark Jansen <mark.jansen@reactos.org>
 """
 
 from sdbtool.apphelp import (
-    PathType,
     SdbDatabase,
     TagVisitor,
     TagType,
@@ -14,7 +13,6 @@ from sdbtool.apphelp import (
     tag_value_to_string,
 )
 from sdbtool.xml import XmlWriter
-from pathlib import Path
 import enum
 
 
@@ -122,27 +120,23 @@ class XmlTagVisitor(TagVisitor):
 
 
 def convert(
-    input_file: str,
+    db: SdbDatabase,
     output_stream,
     exclude_tags: list[str],
     annotations: XmlAnnotations,
     with_tagid: bool,
     with_tag: bool,
 ):
-    with SdbDatabase(input_file, PathType.DOS_PATH) as db:
-        if not db:
-            raise FileNotFoundError(f"Failed to open database at '{input_file}'")
-
-        visitor = XmlTagVisitor(
-            output_stream,
-            Path(input_file).name,
-            exclude_tags,
-            annotations,
-            with_tagid=with_tagid,
-            with_tag=with_tag,
-        )
-        root = db.root()
-        assert root is not None, (
-            "This is impossible, otherwise the previous exception would have been raised."
-        )
-        root.accept(visitor)
+    visitor = XmlTagVisitor(
+        output_stream,
+        db.name,
+        exclude_tags,
+        annotations,
+        with_tagid=with_tagid,
+        with_tag=with_tag,
+    )
+    root = db.root()
+    assert root is not None, (
+        "This is impossible, otherwise the previous exception would have been raised."
+    )
+    root.accept(visitor)

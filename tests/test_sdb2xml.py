@@ -83,11 +83,19 @@ STRIPPED_TAG_TAGID_RESULT = """<?xml version="1.0" encoding="utf-8" standalone="
 </SDB>"""
 
 
-def test_database():
+@pytest.fixture(scope="module")
+def all_tags_sdb():
+    db = SdbDatabase(TESTDATA_FOLDER / "all_tagtypes.sdb")
+    assert db
+    yield db
+    db.close()
+
+
+def test_database(all_tags_sdb):
     output = io.StringIO()
     sdb2xml_convert(
-        str(TESTDATA_FOLDER / "all_tagtypes.sdb"),
-        output,
+        db=all_tags_sdb,
+        output_stream=output,
         exclude_tags=[],
         annotations=XmlAnnotations.Comment,
         with_tagid=False,
@@ -98,11 +106,11 @@ def test_database():
     assert xml_content == ALL_TAGS_RESULT
 
 
-def test_database_with_exclude_tags():
+def test_database_with_exclude_tags(all_tags_sdb):
     output = io.StringIO()
     sdb2xml_convert(
-        str(TESTDATA_FOLDER / "all_tagtypes.sdb"),
-        output,
+        db=all_tags_sdb,
+        output_stream=output,
         exclude_tags=["PATCH", "APP", "BIN_FILE_VERSION", "TIME"],
         annotations=XmlAnnotations.Comment,
         with_tagid=False,
@@ -115,23 +123,11 @@ def test_database_with_exclude_tags():
     assert "LINK_DATE" not in xml_content
 
 
-def test_invalid_database():
-    with pytest.raises(FileNotFoundError):
-        sdb2xml_convert(
-            str(TESTDATA_FOLDER / "non_existent.sdb"),
-            io.StringIO(),
-            exclude_tags=[],
-            annotations=XmlAnnotations.Comment,
-            with_tagid=False,
-            with_tag=False,
-        )
-
-
-def test_annotations():
+def test_annotations(all_tags_sdb):
     output = io.StringIO()
     sdb2xml_convert(
-        str(TESTDATA_FOLDER / "all_tagtypes.sdb"),
-        output,
+        db=all_tags_sdb,
+        output_stream=output,
         exclude_tags=[],
         annotations=XmlAnnotations.Disabled,
         with_tagid=False,
@@ -183,11 +179,11 @@ def test_XmlTagVisitor_invalid_visit(monkeypatch):
         visitor.visit(tag)
 
 
-def test_db_with_tagid_and_tag():
+def test_db_with_tagid_and_tag(all_tags_sdb):
     output = io.StringIO()
     sdb2xml_convert(
-        str(TESTDATA_FOLDER / "all_tagtypes.sdb"),
-        output,
+        db=all_tags_sdb,
+        output_stream=output,
         exclude_tags=["PATCH", "InvalidTag"],
         annotations=XmlAnnotations.Disabled,
         with_tagid=True,

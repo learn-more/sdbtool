@@ -8,7 +8,6 @@ COPYRIGHT:   Copyright 2025 Mark Jansen <mark.jansen@reactos.org>
 from sdbtool.apphelp import (
     TAG_NULL,
     Tags,
-    PathType,
     SdbDatabase,
     TagVisitor,
     Tag,
@@ -49,32 +48,26 @@ class GuiTagVisitor(TagVisitor):
         self._treeview.insert(parent_node, tk.END, text=tag.name, values=(value,))
 
 
-def show_gui(
-    input_file: str,
-):
-    with SdbDatabase(input_file, PathType.DOS_PATH) as db:
-        if not db:
-            raise FileNotFoundError(f"Failed to open database at '{input_file}'")
+def show_gui(db: SdbDatabase):
+    window = tk.Tk()
+    window.title("SDB Tool GUI")
+    window.minsize(800, 600)
+    treeview = ttk.Treeview(window, columns=("Value",))
+    treeview.heading("#0", text="Tag")
+    treeview.heading("Value", text="Value")
+    treeview.column("#0", stretch=False, width=300)
+    treeview.column("Value", stretch=True)
 
-        window = tk.Tk()
-        window.title("SDB Tool GUI")
-        window.minsize(800, 600)
-        treeview = ttk.Treeview(window, columns=("Value",))
-        treeview.heading("#0", text="Tag")
-        treeview.heading("Value", text="Value")
-        treeview.column("#0", stretch=False, width=300)
-        treeview.column("Value", stretch=True)
+    verscrlbar = ttk.Scrollbar(window, orient="vertical", command=treeview.yview)
 
-        verscrlbar = ttk.Scrollbar(window, orient="vertical", command=treeview.yview)
+    verscrlbar.pack(side="right", fill="y")
+    treeview.configure(yscrollcommand=verscrlbar.set)
 
-        verscrlbar.pack(side="right", fill="y")
-        treeview.configure(yscrollcommand=verscrlbar.set)
-
-        visitor = GuiTagVisitor(treeview)
-        root = db.root()
-        assert root is not None, (
-            "This is impossible, otherwise the previous exception would have been raised."
-        )
-        root.accept(visitor)
-        treeview.pack(fill=tk.BOTH, expand=True)
-        window.mainloop()
+    visitor = GuiTagVisitor(treeview)
+    root = db.root()
+    assert root is not None, (
+        "This is impossible, otherwise the previous exception would have been raised."
+    )
+    root.accept(visitor)
+    treeview.pack(fill=tk.BOTH, expand=True)
+    window.mainloop()

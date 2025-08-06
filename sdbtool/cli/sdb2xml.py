@@ -6,11 +6,12 @@ COPYRIGHT:   Copyright 2025 Mark Jansen <mark.jansen@reactos.org>
 """
 
 import click
+from sdbtool.cli.types import SDB_DATABASE
 from sdbtool.sdb2xml import convert as sdb2xml_convert, XmlAnnotations
 
 
 @click.command("sdb2xml")
-@click.argument("input_file", type=click.Path(exists=True, dir_okay=False))
+@click.argument("input_file", type=SDB_DATABASE, required=True)
 @click.option(
     "--output",
     type=click.File("w", encoding="utf-8"),
@@ -34,8 +35,14 @@ from sdbtool.sdb2xml import convert as sdb2xml_convert, XmlAnnotations
     " - Disabled: no annotations.\n"
     " - Comment: annotations as comments.",
 )
-@click.option('--tagid/--no-tagid', default=False, help="Include tagids (index in the database) in the XML output.")
-@click.option('--tag/--no-tag', default=False, help="Include tag number in the XML output.")
+@click.option(
+    "--tagid/--no-tagid",
+    default=False,
+    help="Include tagids (index in the database) in the XML output.",
+)
+@click.option(
+    "--tag/--no-tag", default=False, help="Include tag number in the XML output."
+)
 @click.pass_context
 def command(ctx, input_file, output, exclude, annotations, tagid, tag):
     """Convert an SDB file to XML format."""
@@ -45,7 +52,7 @@ def command(ctx, input_file, output, exclude, annotations, tagid, tag):
             exclude.remove("auto")
             exclude.extend(["INDEXES", "STRINGTABLE"])
         sdb2xml_convert(
-            input_file=input_file,
+            db=input_file,
             output_stream=output,
             exclude_tags=exclude,
             annotations=annotations,

@@ -9,8 +9,13 @@ import click
 from click.testing import CliRunner
 from sdbtool.cli import attributes, sdb2xml, info, gui
 from sdbtool.cli import sdbtool_command
+from sdbtool.cli.types import SDB_DATABASE
 from sdbtool.info import DatabaseInformation
+from sdbtool.apphelp import SdbDatabase
 from uuid import UUID
+from pathlib import Path
+
+TESTDATA_FOLDER = Path(__file__).parent / "data"
 
 
 def test_version():
@@ -33,7 +38,7 @@ def test_sdb2xml_command(tmp_path, monkeypatch):
     monkeypatch.setattr(
         sdb2xml,
         "sdb2xml_convert",
-        lambda input_file,
+        lambda db,
         output_stream,
         exclude_tags,
         annotations,
@@ -41,22 +46,18 @@ def test_sdb2xml_command(tmp_path, monkeypatch):
         with_tag: click.echo(f"nop:{exclude_tags}"),
     )
     runner = CliRunner()
-    with runner.isolated_filesystem(tmp_path):
-        with open("test.sdb", "w") as f:
-            f.write("This is a test SDB file.")
-        result = runner.invoke(sdbtool_command, ["sdb2xml", "test.sdb"])
-        assert result.exit_code == 0
-        assert "nop:[]\n" == result.output
-        result = runner.invoke(
-            sdbtool_command, ["sdb2xml", "test.sdb", "--exclude", "XXX,YYY"]
-        )
-        assert result.exit_code == 0
-        assert "nop:['XXX', 'YYY']\n" == result.output
-        result = runner.invoke(
-            sdbtool_command, ["sdb2xml", "test.sdb", "--exclude=auto"]
-        )
-        assert result.exit_code == 0
-        assert "nop:['INDEXES', 'STRINGTABLE']\n" == result.output
+    db_file = str(TESTDATA_FOLDER / "all_tagtypes.sdb")
+    result = runner.invoke(sdbtool_command, ["sdb2xml", db_file])
+    assert result.exit_code == 0
+    assert "nop:[]\n" == result.output
+    result = runner.invoke(
+        sdbtool_command, ["sdb2xml", db_file, "--exclude", "XXX,YYY"]
+    )
+    assert result.exit_code == 0
+    assert "nop:['XXX', 'YYY']\n" == result.output
+    result = runner.invoke(sdbtool_command, ["sdb2xml", db_file, "--exclude=auto"])
+    assert result.exit_code == 0
+    assert "nop:['INDEXES', 'STRINGTABLE']\n" == result.output
 
 
 def test_sdb2xml_exception(tmp_path, monkeypatch):
@@ -65,13 +66,25 @@ def test_sdb2xml_exception(tmp_path, monkeypatch):
 
     monkeypatch.setattr(sdb2xml, "sdb2xml_convert", raise_value_error)
     runner = CliRunner()
+    db_file = str(TESTDATA_FOLDER / "all_tagtypes.sdb")
+    result = runner.invoke(sdbtool_command, ["sdb2xml", db_file])
+    assert result.exit_code == 1
+    assert "Error converting SDB to XML" in result.output
+    assert "Test error" in result.output
+
+
+def test_sdb2xml_invalid_file(tmp_path, monkeypatch):
+    runner = CliRunner()
     with runner.isolated_filesystem(tmp_path):
         with open("test.sdb", "w") as f:
-            f.write("This is a test SDB file.")
+            f.write("")
         result = runner.invoke(sdbtool_command, ["sdb2xml", "test.sdb"])
-        assert result.exit_code == 1
-        assert "Error converting SDB to XML" in result.output
-        assert "Test error" in result.output
+        assert result.exit_code == 2
+        assert "Failed to open database at 'test.sdb'" in result.output
+        assert (
+            "Invalid value for 'INPUT_FILE': 'test.sdb' is not a valid SDB database:"
+            in result.output
+        )
 
 
 def test_attributes_command(tmp_path, monkeypatch):
@@ -161,11 +174,13 @@ def test_info_command(tmp_path, monkeypatch):
 
 def test_gui_command(tmp_path, monkeypatch):
     def mock_show_gui(input_file):
-        if not input_file.endswith(".sdb"):
-            raise FileNotFoundError(f"File {input_file} does not exist.")
-        click.echo(f"GUI launched {input_file}.")
+        if not input_file.name.endswith(".sdb"):
+            raise FileNotFoundError(f"File {input_file.name} does not exist.")
+        click.echo(f"GUI launched {input_file.name}.")
 
     monkeypatch.setattr(gui, "show_gui", mock_show_gui)
+    # Mock SdbDatabase to always return True for __bool__ to avoid needing a real SDB file
+    monkeypatch.setattr(SdbDatabase, "__bool__", lambda self: True)
     runner = CliRunner()
     with runner.isolated_filesystem(tmp_path):
         with open("test.sdb", "w") as f:
@@ -178,3 +193,17 @@ def test_gui_command(tmp_path, monkeypatch):
         result = runner.invoke(sdbtool_command, ["gui", "test.nope"])
         assert result.exit_code == 1
         assert "Error launching GUI: File test.nope does not exist." in result.output
+
+
+def test_sdb_database_param_type():
+    """ Test some click requirements for the SDB_DATABASE type. """
+    db_file = TESTDATA_FOLDER / "all_tagtypes.sdb"
+    with SdbDatabase(db_file) as db:
+        converted = SDB_DATABASE.convert(db, None, None)
+        assert converted is db
+
+        other = SDB_DATABASE.convert(db_file, None, None)
+        assert isinstance(other, SdbDatabase)
+        assert other.path == db_file
+        assert other is not db
+        other.close()

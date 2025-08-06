@@ -6,18 +6,11 @@ COPYRIGHT:   Copyright 2025 Mark Jansen <mark.jansen@reactos.org>
 """
 
 from pathlib import Path
+from sdbtool.apphelp import SdbDatabase
 from sdbtool.gui import show_gui
 import tkinter as tk
-import pytest
 
 TESTDATA_FOLDER = Path(__file__).parent / "data"
-
-
-def test_invalid_database():
-    with pytest.raises(FileNotFoundError):
-        show_gui(
-            str(TESTDATA_FOLDER / "non_existent.sdb"),
-        )
 
 
 def find_item(tree, text, current=None):
@@ -62,7 +55,8 @@ def test_gui(monkeypatch):
 
     monkeypatch.setattr(tk.Tk, "mainloop", mock_mainloop)
 
-    show_gui(
-        str(TESTDATA_FOLDER / "all_tagtypes.sdb"),
-    )
+    with SdbDatabase(TESTDATA_FOLDER / "all_tagtypes.sdb") as db:
+        show_gui(
+            db=db,
+        )
     assert mainloop_called, "The mainloop was not called, GUI did not launch."

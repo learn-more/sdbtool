@@ -35,6 +35,8 @@ Repository = "https://github.com/learn-more/sdbtool"
 sdbtool = "sdbtool.cli:sdbtool_command"
 sdb2xml = "sdbtool.cli:sdb2xml_command"
 sdbinfo = "sdbtool.cli:info_command"
+
+[project.gui-scripts]
 sdbgui = "sdbtool.cli:gui_command"
 
 [build-system]

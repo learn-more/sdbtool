@@ -7,10 +7,11 @@ COPYRIGHT:   Copyright 2025 Mark Jansen <mark.jansen@reactos.org>
 
 import click
 from sdbtool.gui import show_gui
+from .types import SDB_DATABASE
 
 
 @click.command("gui")
-@click.argument("input_file", type=click.Path(exists=True, dir_okay=False))
+@click.argument("input_file", type=SDB_DATABASE, required=True)
 @click.pass_context
 def command(ctx, input_file):
     """Launch the GUI for the SDB tool."""

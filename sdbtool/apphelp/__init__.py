@@ -13,6 +13,8 @@ from . import winapi as apphelp
 from datetime import datetime, timezone
 from abc import ABC, abstractmethod
 from .tags import Win10Tags as Tags, tag_id_to_string
+from pathlib import Path
+from os import PathLike
 
 TAG_NULL = 0x0
 TAGID_NULL = 0x0
@@ -219,10 +221,11 @@ class TagVisitor(ABC):
 
 
 class SdbDatabase:
-    def __init__(self, path: str, path_type: PathType):
-        self.path = path
+    def __init__(self, path: str | PathLike, path_type: PathType = PathType.DOS_PATH):
+        self.path = Path(path)
+        self.name = self.path.name
         self.path_type = path_type
-        self._handle = apphelp.SdbOpenDatabase(path, path_type)
+        self._handle = apphelp.SdbOpenDatabase(str(path), path_type)
         self._root = None
 
     def root(self) -> Tag | None:
