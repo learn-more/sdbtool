@@ -1,0 +1,33 @@
+name: Auto tag
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    permissions:
+      contents:
+        write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install the latest version of uv and set the python version
+        uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.10"
+
+      - name: Create a new tag if the version changes
+        run: |
+          TAG="v$(uv version --short)"
+          echo "Current version: $TAG"
+          git fetch --tags
+          if git rev-parse "$TAG" >/dev/null 2>&1
+          then
+            echo "Tag already exists, skipping creation."
+          else
+            git tag ${TAG}
+            git push origin $TAG
+          fi
