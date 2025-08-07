@@ -1,6 +1,6 @@
 [project]
 name = "sdbtool"
-version = "0.7.0"
+version = "0.7.2"
 description = "Interact with .sdb files using apphelp.dll"
 readme = "README.md"
 license = "MIT"
