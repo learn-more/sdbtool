@@ -1,35 +1,31 @@
 """
 PROJECT:     sdbtool
 LICENSE:     MIT (https://spdx.org/licenses/MIT)
-PURPOSE:     tests for the apphelp.winapi module.
-COPYRIGHT:   Copyright 2025 Mark Jansen <mark.jansen@reactos.org>
+PURPOSE:     tests for the pure-Python apphelp reader / file-attribute layer.
+COPYRIGHT:   Copyright 2025,2026 Mark Jansen <mark.jansen@reactos.org>
 """
 
 import pytest
-from ctypes import c_void_p
-from sdbtool.apphelp.winapi import (
-    APPHELP,
-    ATTRINFO,
-    SdbFormatAttribute,
-    SdbReadBinaryTag,
-)
+from sdbtool.apphelp import sdb_reader
+from sdbtool.apphelp.fileattr import AttrInfo, format_attribute, ATTRIBUTE_FAILED
 
 
-def test_SdbReadBinaryTag_fails(monkeypatch):
-    monkeypatch.setattr(APPHELP, "SdbGetTagDataSize", lambda pdb, tagid: 1)
-    monkeypatch.setattr(APPHELP, "SdbReadBinaryTag", lambda pdb, tagid, buffer, size: 0)
+def test_SdbReadBinaryTag_not_binary():
+    # A zero-length buffer has no valid tags, so reading a binary tag must fail.
+    pdb = sdb_reader.SdbFile(b"", 2, 0)
+    with pytest.raises(ValueError, match="is not a binary tag"):
+        sdb_reader.SdbReadBinaryTag(pdb, 0x1234)
 
-    # Check that the function raises an error when trying to read a binary tag that should succeed, but doesn't
+
+def test_SdbReadBinaryTag_truncated(monkeypatch):
+    pdb = sdb_reader.SdbFile(b"", 2, 0)
+    # Pretend there is a binary tag, but the data cannot be read.
+    monkeypatch.setattr(sdb_reader, "_check_type", lambda *a: True)
     with pytest.raises(ValueError, match="Failed to read binary tag"):
-        SdbReadBinaryTag(c_void_p(), 0x1234)
+        sdb_reader.SdbReadBinaryTag(pdb, 0x1234)
 
 
-def test_SdbFormatAttribute_fails(monkeypatch):
-    monkeypatch.setattr(APPHELP, "SdbFormatAttribute", lambda attr, buf, size: 0)
-
-    attr = ATTRINFO()
-    attr.tAttrID = 0x7001  # TAG_DATABASE
-
-    # Check that the function raises an error when trying to format an attribute that should succeed, but fails
+def test_format_attribute_fails():
+    attr = AttrInfo(0x7001, ATTRIBUTE_FAILED, None)  # TAG_DATABASE
     with pytest.raises(ValueError, match="Failed to format attribute \\(DATABASE\\)"):
-        SdbFormatAttribute(attr)
+        format_attribute(attr)

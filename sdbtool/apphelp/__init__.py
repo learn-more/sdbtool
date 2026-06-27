@@ -2,14 +2,14 @@
 PROJECT:     sdbtool
 LICENSE:     MIT (https://spdx.org/licenses/MIT)
 PURPOSE:     High level interface to the AppHelp API for reading SDB files.
-COPYRIGHT:   Copyright 2025 Mark Jansen <mark.jansen@reactos.org>
+COPYRIGHT:   Copyright 2025,2026 Mark Jansen <mark.jansen@reactos.org>
 """
 
-from ctypes import c_void_p
 from enum import IntEnum, IntFlag
 from base64 import b64encode
 from uuid import UUID
 from . import winapi as apphelp
+from .sdb_reader import SdbFile
 from datetime import datetime, timezone
 from abc import ABC, abstractmethod
 from .tags import Win10Tags as Tags, tag_id_to_string
@@ -142,7 +142,7 @@ class Tag:
             self.name = tag_id_to_string(self.tag)
             self.type = get_tag_type(self.tag)
 
-    def _ensure_db_handle(self) -> c_void_p:
+    def _ensure_db_handle(self) -> SdbFile:
         """Ensures that the database handle is initialized."""
         if self.db._handle is None:
             raise ValueError("Database handle is not initialized")
