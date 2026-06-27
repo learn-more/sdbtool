@@ -249,7 +249,11 @@ def SdbGetStringTagPtr(pdb: SdbFile, tagid: int) -> str | None:
     raw = SdbpReadData(pdb, offset, size)
     if raw is None:
         return None
-    return raw.decode("utf-16-le").rstrip("\x00")
+    try:
+        return raw.decode("utf-16-le").rstrip("\x00")
+    except UnicodeDecodeError:
+        # Corrupt / malformed string data: treat as a read failure.
+        return None
 
 
 def _resolve_metadata(pdb: SdbFile) -> None:

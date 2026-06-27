@@ -175,6 +175,19 @@ def _decode(value) -> str:
     return value
 
 
+def _export_name(pe: "pefile.PE") -> str | None:
+    """Return the export directory name of ``pe``, or ``None`` if absent."""
+    if not hasattr(pe, "DIRECTORY_ENTRY_EXPORT"):
+        return None
+    name_rva = getattr(pe.DIRECTORY_ENTRY_EXPORT.struct, "Name", 0)
+    if not name_rva:
+        return None
+    raw = pe.get_string_at_rva(name_rva)
+    if not raw:
+        return None
+    return _decode(raw)
+
+
 def _version_resource(pe: "pefile.PE"):
     """Return (fixed_info, strings_dict, language) or (None, {}, None)."""
     fixed = None
@@ -279,7 +292,6 @@ def get_file_attributes(path: str | os.PathLike) -> list[AttrInfo]:
 
     if pe is not None:
         oh = pe.OPTIONAL_HEADER
-        fh = pe.FILE_HEADER
         attrs.append(_available(TAG_PE_CHECKSUM, oh.CheckSum))
         attrs.append(
             _available(
@@ -311,12 +323,7 @@ def get_file_attributes(path: str | os.PathLike) -> list[AttrInfo]:
         attrs.append(_failed(TAG_FROM_LINK_DATE))
         attrs.append(_failed(TAG_UPTO_LINK_DATE))
 
-    export_name = None
-    if pe is not None and hasattr(pe, "DIRECTORY_ENTRY_EXPORT"):
-        name = getattr(pe.DIRECTORY_ENTRY_EXPORT.struct, "Name", 0)
-        raw = pe.get_string_at_rva(name) if name else None
-        if raw:
-            export_name = _decode(raw)
+    export_name = _export_name(pe) if pe is not None else None
     attrs.append(
         _available(TAG_EXPORT_NAME, export_name)
         if export_name is not None

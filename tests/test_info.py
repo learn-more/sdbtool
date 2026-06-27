@@ -30,3 +30,16 @@ def test_info():
 
     with pytest.raises(ValueError, match="Failed to get database information for"):
         get_info(TESTDATA_FOLDER / "nonexistent.sdb")
+
+
+def test_info_header_only(tmp_path):
+    # A header-only database has no DATABASE tag: runtime platform defaults to 4.
+    import struct
+
+    f = tmp_path / "header_only.sdb"
+    f.write_bytes(struct.pack("<I", 2) + struct.pack("<I", 0) + b"sdbf")
+    db_info = get_info(f)
+    assert db_info.Description is None
+    assert db_info.Id is None
+    assert db_info.dwFlags == 0x10000000
+    assert db_info.dwRuntimePlatform == 4
