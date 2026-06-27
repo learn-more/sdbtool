@@ -1,289 +1,72 @@
 """
 PROJECT:     sdbtool
 LICENSE:     MIT (https://spdx.org/licenses/MIT)
-PURPOSE:     winapi interface to the AppHelp API for reading SDB files.
-COPYRIGHT:   Copyright 2025 Mark Jansen <mark.jansen@reactos.org>
+PURPOSE:     Low-level interface for reading SDB files.
+COPYRIGHT:   Copyright 2025,2026 Mark Jansen <mark.jansen@reactos.org>
+
+This is a thin facade over the pure-Python SDB reader (sdb_reader.py). It keeps
+the historical apphelp-style function names used by the high-level interface,
+but no longer depends on the native apphelp.dll.
 """
 
-from ctypes import (
-    byref,
-    c_uint8,
-    create_unicode_buffer,
-    windll,
-    c_void_p,
-    c_uint16,
-    c_uint32,
-    c_wchar_p,
-    POINTER,
-    pointer,
-    c_ubyte,
-    c_uint64,
-    Structure,
-    Union,
-)
-
-from sdbtool.apphelp.tags.Win10 import tag_id_to_string
-
-APPHELP = windll.apphelp
-
-# PDB WINAPI SdbOpenDatabase(LPCWSTR path, PATH_TYPE type);
-APPHELP.SdbOpenDatabase.argtypes = [c_wchar_p, c_uint32]
-APPHELP.SdbOpenDatabase.restype = c_void_p
-
-# void WINAPI SdbCloseDatabase(PDB);
-APPHELP.SdbCloseDatabase.argtypes = [c_void_p]
-
-# TAGID WINAPI SdbGetFirstChild(PDB pdb, TAGID parent);
-APPHELP.SdbGetFirstChild.argtypes = [c_void_p, c_uint32]
-APPHELP.SdbGetFirstChild.restype = c_uint32
-
-# TAGID WINAPI SdbGetNextChild(PDB pdb, TAGID parent, TAGID prev_child);
-APPHELP.SdbGetNextChild.argtypes = [c_void_p, c_uint32, c_uint32]
-APPHELP.SdbGetNextChild.restype = c_uint32
-
-# TAG WINAPI SdbGetTagFromTagID(PDB pdb, TAGID tagid);
-APPHELP.SdbGetTagFromTagID.argtypes = [c_void_p, c_uint32]
-APPHELP.SdbGetTagFromTagID.restype = c_uint16
-
-# BYTE WINAPI SdbReadBYTETag(PDB pdb, TAGID tagid, BYTE ret);
-APPHELP.SdbReadBYTETag.argtypes = [c_void_p, c_uint32, c_uint8]
-APPHELP.SdbReadBYTETag.restype = c_uint8
-
-# WORD WINAPI SdbReadWORDTag(PDB pdb, TAGID tagid, WORD ret);
-APPHELP.SdbReadWORDTag.argtypes = [c_void_p, c_uint32, c_uint16]
-APPHELP.SdbReadWORDTag.restype = c_uint16
-
-# DWORD WINAPI SdbReadDWORDTag(PDB pdb, TAGID tagid, DWORD ret);
-APPHELP.SdbReadDWORDTag.argtypes = [c_void_p, c_uint32, c_uint32]
-APPHELP.SdbReadDWORDTag.restype = c_uint32
-
-# QWORD WINAPI SdbReadQWORDTag(PDB pdb, TAGID tagid, QWORD ret);
-APPHELP.SdbReadQWORDTag.argtypes = [c_void_p, c_uint32, c_uint64]
-APPHELP.SdbReadQWORDTag.restype = c_uint64
-
-# DWORD WINAPI SdbGetTagDataSize(PDB pdb, TAGID tagid);
-APPHELP.SdbGetTagDataSize.argtypes = [c_void_p, c_uint32]
-APPHELP.SdbGetTagDataSize.restype = c_uint32
-
-# BOOL WINAPI SdbReadBinaryTag(PDB pdb, TAGID tagid, PBYTE buffer, DWORD size);
-APPHELP.SdbReadBinaryTag.argtypes = [c_void_p, c_uint32, POINTER(c_ubyte), c_uint32]
-APPHELP.SdbReadBinaryTag.restype = c_uint32
-
-# LPWSTR WINAPI SdbGetStringTagPtr(PDB pdb, TAGID tagid);
-APPHELP.SdbGetStringTagPtr.argtypes = [c_void_p, c_uint32]
-APPHELP.SdbGetStringTagPtr.restype = c_wchar_p
+from sdbtool.apphelp import sdb_reader
+from sdbtool.apphelp.sdb_reader import SdbFile
 
 
-# typedef struct tagATTRINFO {
-#   TAG   tAttrID;
-#   DWORD dwFlags;
-#   union {
-#     ULONGLONG ullAttr;
-#     DWORD     dwAttr;
-#     TCHAR     *lpAttr;
-#   };
-# } ATTRINFO, *PATTRINFO;
+def SdbOpenDatabase(path: str, path_type: int = 0) -> SdbFile | None:
+    """Open a database at the specified path.
+
+    ``path_type`` (DOS_PATH / NT_PATH) is accepted for API compatibility; the
+    file is always read directly through the filesystem.
+    """
+    return sdb_reader.SdbOpenDatabase(path)
 
 
-class _U(Union):
-    _fields_ = [("ullAttr", c_uint64), ("dwAttr", c_uint32), ("lpAttr", c_wchar_p)]
+def SdbCloseDatabase(db: SdbFile | None) -> None:
+    """Close the specified database (no-op; kept for API compatibility)."""
 
 
-class ATTRINFO(Structure):
-    _anonymous_ = ("_u",)
-    _fields_ = [
-        ("tAttrID", c_uint16),  # TAG
-        ("dwFlags", c_uint32),
-        ("_u", _U),  # Union for ullAttr, dwAttr, lpAttr
-    ]
-
-
-ATTRIBUTE_AVAILABLE = 0x00000001  # Attribute is available
-
-
-# BOOL WINAPI SdbFormatAttribute(
-#   _In_  PATTRINFO pAttrInfo,
-#   _Out_ LPTSTR    pchBuffer,
-#   _In_  DWORD     dwBufferSize
-# );
-APPHELP.SdbFormatAttribute.argtypes = [POINTER(ATTRINFO), c_wchar_p, c_uint32]
-APPHELP.SdbFormatAttribute.restype = c_uint32
-
-# BOOL WINAPI SdbGetFileAttributes(
-#   _In_  LPCTSTR   lpwszFileName,
-#   _Out_ PATTRINFO *ppAttrInfo,
-#   _Out_ LPDWORD   lpdwAttrCount
-# );
-APPHELP.SdbGetFileAttributes.argtypes = [
-    c_wchar_p,
-    POINTER(POINTER(ATTRINFO)),
-    POINTER(c_uint32),
-]
-APPHELP.SdbGetFileAttributes.restype = c_uint32
-
-# BOOL WINAPI SdbFreeFileAttributes(
-#   _In_ PATTRINFO pFileAttributes
-# );
-APPHELP.SdbFreeFileAttributes.argtypes = [c_void_p]
-APPHELP.SdbFreeFileAttributes.restype = c_uint32
-
-
-# BOOL WINAPI SdbGetMatchingExe(
-#   _In_opt_ HSDB            hSDB,
-#   _In_     LPCTSTR         szPath,
-#   _In_opt_ LPCTSTR         szModuleName,
-#   _In_opt_ LPCTSTR         pszEnvironment,
-#   _In_     DWORD           dwFlags,
-#   _Out_    PSDBQUERYRESULT pQueryResult
-# );
-APPHELP.SdbGetMatchingExe.argtypes = [
-    c_void_p,
-    c_wchar_p,
-    c_wchar_p,
-    c_wchar_p,
-    c_uint32,
-    POINTER(c_void_p),
-]
-APPHELP.SdbGetMatchingExe.restype = c_uint32
-
-# void WINAPI SdbReleaseMatchingExe(
-#   _In_ HSDB   hSDB,
-#   _In_ TAGREF trExe
-# );
-APPHELP.SdbReleaseMatchingExe.argtypes = [c_void_p, c_uint32]
-APPHELP.SdbReleaseMatchingExe.restype = None
-
-
-DB_INFO_FLAGS_VALID_GUID = 1
-
-
-class SDBDATABASEINFO(Structure):
-    _fields_ = [
-        ("dwFlags", c_uint32),  # DB_INFO_FLAGS_VALID_GUID
-        ("dwMajor", c_uint32),
-        ("dwMinor", c_uint32),
-        ("Description", c_wchar_p),
-        ("Id", c_uint8 * 16),  # GUID is 16 bytes
-        ("dwRuntimePlatform", c_uint32),
-    ]
-
-
-# BOOL WINAPI SdbGetDatabaseInformationByName(
-#   _In_  LPCTSTR   lpwszFileName,
-#   _Out_ PSDBDATABASEINFO *ppAttrInfo,
-# );
-APPHELP.SdbGetDatabaseInformationByName.argtypes = [
-    c_wchar_p,
-    POINTER(POINTER(SDBDATABASEINFO)),
-]
-APPHELP.SdbGetDatabaseInformationByName.restype = c_uint32
-
-# BOOL WINAPI SdbFreeDatabaseInformation(
-#   _In_ PSDBDATABASEINFO pFileAttributes
-# );
-APPHELP.SdbFreeDatabaseInformation.argtypes = [c_void_p]
-APPHELP.SdbFreeDatabaseInformation.restype = c_uint32
-
-
-def SdbOpenDatabase(path: str, path_type: int) -> c_void_p:
-    """Open a database at the specified path."""
-    return APPHELP.SdbOpenDatabase(path, path_type)
-
-
-def SdbCloseDatabase(db: c_void_p):
-    """Close the specified database."""
-    APPHELP.SdbCloseDatabase(db)
-
-
-def SdbGetFirstChild(db: c_void_p, parent: int) -> int:
+def SdbGetFirstChild(db: SdbFile, parent: int) -> int:
     """Get the first child tag of the specified parent."""
-    return APPHELP.SdbGetFirstChild(db, parent)
+    return sdb_reader.SdbGetFirstChild(db, parent)
 
 
-def SdbGetNextChild(db: c_void_p, parent: int, prev_child: int) -> int:
+def SdbGetNextChild(db: SdbFile, parent: int, prev_child: int) -> int:
     """Get the next child tag of the specified parent."""
-    return APPHELP.SdbGetNextChild(db, parent, prev_child)
+    return sdb_reader.SdbGetNextChild(db, parent, prev_child)
 
 
-def SdbGetTagFromTagID(db: c_void_p, tag_id: int) -> int:
+def SdbGetTagFromTagID(db: SdbFile, tag_id: int) -> int:
     """Get the tag from the specified tag ID."""
-    return APPHELP.SdbGetTagFromTagID(db, tag_id)
+    return sdb_reader.SdbGetTagFromTagID(db, tag_id)
 
 
-def SdbReadBYTETag(db: c_void_p, tag_id: int, default: int = 0) -> int:
+def SdbReadBYTETag(db: SdbFile, tag_id: int, default: int = 0) -> int:
     """Read a BYTE tag from the database."""
-    return APPHELP.SdbReadBYTETag(db, tag_id, default)
+    return sdb_reader.SdbReadBYTETag(db, tag_id, default)
 
 
-def SdbReadWORDTag(db: c_void_p, tag_id: int, default: int = 0) -> int:
+def SdbReadWORDTag(db: SdbFile, tag_id: int, default: int = 0) -> int:
     """Read a WORD tag from the database."""
-    return APPHELP.SdbReadWORDTag(db, tag_id, default)
+    return sdb_reader.SdbReadWORDTag(db, tag_id, default)
 
 
-def SdbReadDWORDTag(db: c_void_p, tag_id: int, default: int = 0) -> int:
+def SdbReadDWORDTag(db: SdbFile, tag_id: int, default: int = 0) -> int:
     """Read a DWORD tag from the database."""
-    return APPHELP.SdbReadDWORDTag(db, tag_id, default)
+    return sdb_reader.SdbReadDWORDTag(db, tag_id, default)
 
 
-def SdbReadQWORDTag(db: c_void_p, tag_id: int, default: int = 0) -> int:
+def SdbReadQWORDTag(db: SdbFile, tag_id: int, default: int = 0) -> int:
     """Read a QWORD tag from the database."""
-    return APPHELP.SdbReadQWORDTag(db, tag_id, default)
+    return sdb_reader.SdbReadQWORDTag(db, tag_id, default)
 
 
-def SdbReadBinaryTag(db: c_void_p, tag_id: int) -> bytes:
+def SdbReadBinaryTag(db: SdbFile, tag_id: int) -> bytes:
     """Read a binary tag from the database."""
-    size = APPHELP.SdbGetTagDataSize(db, tag_id)
-    if size == 0:
-        return b""
-    data = (c_ubyte * size)()
-    result = APPHELP.SdbReadBinaryTag(db, tag_id, data, size)
-    if result == 0:
-        raise ValueError(f"Failed to read binary tag 0x{tag_id:x}")
-    return bytes(data)
+    return sdb_reader.SdbReadBinaryTag(db, tag_id)
 
 
-def SdbGetStringTagPtr(db: c_void_p, tag_id: int) -> str:
-    """Get the string pointer of the specified tag."""
-    return APPHELP.SdbGetStringTagPtr(db, tag_id)
-
-
-def GetFileAttributes(file_name: str):
-    """Get file attributes for the specified file."""
-    attr_info = POINTER(ATTRINFO)()
-    attr_count = c_uint32()
-    result = APPHELP.SdbGetFileAttributes(
-        file_name, byref(attr_info), byref(attr_count)
-    )
-    if result == 0:
-        raise ValueError(f"Failed to get file attributes for '{file_name}'")
-    return attr_info, attr_count
-
-
-def SdbFormatAttribute(attr_info: ATTRINFO) -> str:
-    """Format the attribute information into a string."""
-    buffer_size = 1024 * 2
-    buffer = create_unicode_buffer(buffer_size)
-    result = APPHELP.SdbFormatAttribute(pointer(attr_info), buffer, buffer_size)
-    if result == 0:
-        name = tag_id_to_string(attr_info.tAttrID)
-        raise ValueError(f"Failed to format attribute ({name})")
-    return buffer.value if buffer.value else ""
-
-
-def SdbFreeFileAttributes(attr_info):
-    """Free the file attributes structure."""
-    APPHELP.SdbFreeFileAttributes(attr_info)
-
-
-def GetDatabaseInformationByName(file_name: str):
-    """Get database information for the specified file."""
-    db_info = POINTER(SDBDATABASEINFO)()
-    result = APPHELP.SdbGetDatabaseInformationByName(file_name, byref(db_info))
-    if result == 0:
-        raise ValueError(f"Failed to get database information for '{file_name}'")
-    return db_info
-
-
-def SdbFreeDatabaseInformation(db_info):
-    """Free the database information structure."""
-    APPHELP.SdbFreeDatabaseInformation(db_info)
+def SdbGetStringTagPtr(db: SdbFile, tag_id: int) -> str:
+    """Get the string value of the specified tag."""
+    value = sdb_reader.SdbGetStringTagPtr(db, tag_id)
+    return value if value is not None else ""

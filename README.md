@@ -22,9 +22,10 @@ A tool for converting Microsoft Application Compatibility Database (SDB) files t
 ## Features<a id="features"></a>
 
 - Parses SDB files used by Windows for application compatibility.
-- Converts SDB data into readable XML.
+- Converts SDB data into readable XML or JSON format.
 - Dump file attributes in SDB-recognizable format
 - Useful for analysis, migration, or documentation.
+- Pure Python and cross-platform - no native `apphelp.dll` dependency.
 
 
 ## Getting Started<a id="getting-started"></a>
@@ -36,10 +37,12 @@ Sdbtool is available as [`sdbtool`](https://pypi.org/project/sdbtool/) on PyPI.
 Invoke sdbtool directly with [`uvx`](https://docs.astral.sh/uv/):
 
 ```shell
-uvx sdbtool sdb2xml your.sdb                    # Convert the file 'your.sdb' to xml, and print it to the console
-uvx sdbtool sdb2xml your.sdb --output your.xml  # Convert the file 'your.sdb' to xml, and write it to 'your.xml'
-uvx sdbtool attributes your.exe                 # Show the file attributes as recognized by apphelp in an XML-friendly format
-uvx sdbtool info your.sdb                       # Show some details about the SDB file (version, description, ...)
+uvx sdbtool sdb2xml your.sdb                        # Convert the file 'your.sdb' to xml, and print it to the console
+uvx sdbtool sdb2xml your.sdb --output your.xml      # Convert the file 'your.sdb' to xml, and write it to 'your.xml'
+uvx sdbtool sdb2json your.sdb                       # Convert the file 'your.sdb' to json, and print it to the console
+uvx sdbtool sdb2json your.sdb --output your.json    # Convert the file 'your.sdb' to json, and write it to 'your.json'
+uvx sdbtool attributes your.exe                     # Show the file attributes as recognized by apphelp in an XML-friendly format
+uvx sdbtool info your.sdb                           # Show some details about the SDB file (version, description, ...)
 ```
 
 Or install sdbtool with `uv` (recommended), `pip`, or `pipx`:
