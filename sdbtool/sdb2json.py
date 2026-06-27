@@ -47,7 +47,7 @@ class JsonTagVisitor(TagVisitor):
 
     def visit_list_begin(self, tag: Tag):
         if tag.tag_id == 0:
-            # Root SDB node — its attributes go on the root dict itself
+            # Root SDB node - its attributes go on the root dict itself
             if self._with_tagid:
                 self._root_meta["tagid"] = tag.tag_id
             if self._with_tag:
