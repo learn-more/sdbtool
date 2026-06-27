@@ -2,7 +2,7 @@
 PROJECT:     sdbtool
 LICENSE:     MIT (https://spdx.org/licenses/MIT)
 PURPOSE:     Tests for the sdb2json module.
-COPYRIGHT:   Copyright 2025 Mark Jansen <mark.jansen@reactos.org>
+COPYRIGHT:   Copyright 2026 Mark Jansen <mark.jansen@reactos.org>
 """
 
 import io

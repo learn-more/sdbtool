@@ -2,7 +2,7 @@
 PROJECT:     sdbtool
 LICENSE:     MIT (https://spdx.org/licenses/MIT)
 PURPOSE:     Convert SDB files to JSON format.
-COPYRIGHT:   Copyright 2025 Mark Jansen <mark.jansen@reactos.org>
+COPYRIGHT:   Copyright 2026 Mark Jansen <mark.jansen@reactos.org>
 """
 
 from sdbtool.apphelp import (
@@ -41,6 +41,8 @@ class JsonTagVisitor(TagVisitor):
         self._with_tag = with_tag
         self._root_meta: dict = {"file": input_filename}
         self._top_children: list = []
+        # Dummy root keeps the stack non-empty so visit/visit_list_begin can
+        # always do _stack[-1]["children"].append(...) without an empty-stack check.
         self._stack: list[dict] = [{"children": self._top_children}]
 
     def visit_list_begin(self, tag: Tag):

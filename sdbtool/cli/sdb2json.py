@@ -2,11 +2,12 @@
 PROJECT:     sdbtool
 LICENSE:     MIT (https://spdx.org/licenses/MIT)
 PURPOSE:     cli handling for the sdb2json command
-COPYRIGHT:   Copyright 2025 Mark Jansen <mark.jansen@reactos.org>
+COPYRIGHT:   Copyright 2026 Mark Jansen <mark.jansen@reactos.org>
 """
 
 import click
 from sdbtool.cli.types import SDB_DATABASE
+from sdbtool.cli.common import common_sdb_options, expand_exclude
 from sdbtool.sdb2json import convert as sdb2json_convert
 
 
@@ -19,38 +20,19 @@ from sdbtool.sdb2json import convert as sdb2json_convert
     help="Path to the output JSON file, or '-' for stdout.",
 )
 @click.option(
-    "--exclude",
-    type=click.STRING,
-    default="",
-    metavar="TAG,TAG",
-    help="Exclude specified tags from the SDB file."
-    " Use 'auto' as an alias for 'INDEXES,STRINGTABLE'.",
-)
-@click.option(
     "--annotations/--no-annotations",
     default=True,
     help="Include annotations (e.g. decoded flag names, UUIDs) as 'comment' fields [default: enabled].",
 )
-@click.option(
-    "--tagid/--no-tagid",
-    default=False,
-    help="Include tagids (index in the database) in the JSON output.",
-)
-@click.option(
-    "--tag/--no-tag", default=False, help="Include tag number in the JSON output."
-)
+@common_sdb_options
 @click.pass_context
-def command(ctx, input_file, output, exclude, annotations, tagid, tag):
+def command(ctx, input_file, output, annotations, exclude, tagid, tag):
     """Convert an SDB file to JSON format."""
     try:
-        exclude = [c.strip() for c in exclude.split(",") if c.strip()]
-        if "auto" in exclude:
-            exclude.remove("auto")
-            exclude.extend(["INDEXES", "STRINGTABLE"])
         sdb2json_convert(
             db=input_file,
             output_stream=output,
-            exclude_tags=exclude,
+            exclude_tags=expand_exclude(exclude),
             with_annotations=annotations,
             with_tagid=tagid,
             with_tag=tag,

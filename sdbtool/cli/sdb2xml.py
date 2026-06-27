@@ -7,6 +7,7 @@ COPYRIGHT:   Copyright 2025 Mark Jansen <mark.jansen@reactos.org>
 
 import click
 from sdbtool.cli.types import SDB_DATABASE
+from sdbtool.cli.common import common_sdb_options, expand_exclude
 from sdbtool.sdb2xml import convert as sdb2xml_convert, XmlAnnotations
 
 
@@ -19,14 +20,6 @@ from sdbtool.sdb2xml import convert as sdb2xml_convert, XmlAnnotations
     help="Path to the output XML file, or '-' for stdout.",
 )
 @click.option(
-    "--exclude",
-    type=click.STRING,
-    default="",
-    metavar="TAG,TAG",
-    help="Exclude specified tags from the SDB file."
-    " Use 'auto' as an alias for 'INDEXES,STRINGTABLE'.",
-)
-@click.option(
     "--annotations",
     type=click.Choice(XmlAnnotations, case_sensitive=False),
     default=XmlAnnotations.Comment,
@@ -35,26 +28,15 @@ from sdbtool.sdb2xml import convert as sdb2xml_convert, XmlAnnotations
     " - Disabled: no annotations.\n"
     " - Comment: annotations as comments.",
 )
-@click.option(
-    "--tagid/--no-tagid",
-    default=False,
-    help="Include tagids (index in the database) in the XML output.",
-)
-@click.option(
-    "--tag/--no-tag", default=False, help="Include tag number in the XML output."
-)
+@common_sdb_options
 @click.pass_context
-def command(ctx, input_file, output, exclude, annotations, tagid, tag):
+def command(ctx, input_file, output, annotations, exclude, tagid, tag):
     """Convert an SDB file to XML format."""
     try:
-        exclude = [c.strip() for c in exclude.split(",") if c.strip()]
-        if "auto" in exclude:
-            exclude.remove("auto")
-            exclude.extend(["INDEXES", "STRINGTABLE"])
         sdb2xml_convert(
             db=input_file,
             output_stream=output,
-            exclude_tags=exclude,
+            exclude_tags=expand_exclude(exclude),
             annotations=annotations,
             with_tagid=tagid,
             with_tag=tag,
