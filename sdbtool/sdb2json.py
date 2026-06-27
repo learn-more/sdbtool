@@ -101,7 +101,7 @@ class _FilteringVisitor(TagVisitor):
 
     def __init__(self, inner: JsonTagVisitor, exclude_tags: list[str]):
         self._inner = inner
-        self._exclude_tags = exclude_tags
+        self._exclude_tags = set(exclude_tags)
         self._skip_depth = 0
 
     def visit_list_begin(self, tag: Tag):
@@ -141,9 +141,8 @@ def convert(
         with_tag=with_tag,
     )
     root = db.root()
-    assert root is not None, (
-        "This is impossible, otherwise the previous exception would have been raised."
-    )
+    if root is None:
+        raise RuntimeError("Failed to get root tag from database.")
     root.accept(_FilteringVisitor(visitor, exclude_tags))
     json.dump(visitor.result(), output_stream, indent=2)
     output_stream.write("\n")

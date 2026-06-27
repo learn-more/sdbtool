@@ -7,7 +7,7 @@ COPYRIGHT:   Copyright 2025 Mark Jansen <mark.jansen@reactos.org>
 
 import click
 from click.testing import CliRunner
-from sdbtool.cli import attributes, sdb2xml, info, gui
+from sdbtool.cli import attributes, sdb2xml, sdb2json, info, gui
 from sdbtool.cli import sdbtool_command
 from sdbtool.cli.types import SDB_DATABASE
 from sdbtool.info import DatabaseInformation
@@ -193,6 +193,45 @@ def test_gui_command(tmp_path, monkeypatch):
         result = runner.invoke(sdbtool_command, ["gui", "test.nope"])
         assert result.exit_code == 1
         assert "Error launching GUI: File test.nope does not exist." in result.output
+
+
+def test_sdb2json_command(tmp_path, monkeypatch):
+    monkeypatch.setattr(
+        sdb2json,
+        "sdb2json_convert",
+        lambda db,
+        output_stream,
+        exclude_tags,
+        with_annotations,
+        with_tagid,
+        with_tag: click.echo(f"nop:{exclude_tags}"),
+    )
+    runner = CliRunner()
+    db_file = str(TESTDATA_FOLDER / "all_tagtypes.sdb")
+    result = runner.invoke(sdbtool_command, ["sdb2json", db_file])
+    assert result.exit_code == 0
+    assert "nop:[]\n" == result.output
+    result = runner.invoke(
+        sdbtool_command, ["sdb2json", db_file, "--exclude", "XXX,YYY"]
+    )
+    assert result.exit_code == 0
+    assert "nop:['XXX', 'YYY']\n" == result.output
+    result = runner.invoke(sdbtool_command, ["sdb2json", db_file, "--exclude=auto"])
+    assert result.exit_code == 0
+    assert "nop:['INDEXES', 'STRINGTABLE']\n" == result.output
+
+
+def test_sdb2json_exception(tmp_path, monkeypatch):
+    def raise_value_error(*args, **kwargs):
+        raise ValueError("Test error")
+
+    monkeypatch.setattr(sdb2json, "sdb2json_convert", raise_value_error)
+    runner = CliRunner()
+    db_file = str(TESTDATA_FOLDER / "all_tagtypes.sdb")
+    result = runner.invoke(sdbtool_command, ["sdb2json", db_file])
+    assert result.exit_code == 1
+    assert "Error converting SDB to JSON" in result.output
+    assert "Test error" in result.output
 
 
 def test_sdb_database_param_type():

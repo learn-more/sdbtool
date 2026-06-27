@@ -380,7 +380,7 @@ def test_tagtype_to_jsontype():
 
 
 def test_JsonTagVisitor_invalid_visit(monkeypatch):
-    def mock_SdbOpenDatabase(path, type):
+    def mock_SdbOpenDatabase(path, path_type):
         return None
 
     monkeypatch.setattr(winapi, "SdbOpenDatabase", mock_SdbOpenDatabase)
@@ -398,6 +398,24 @@ def test_JsonTagVisitor_invalid_visit(monkeypatch):
     tag.tag_id = 1  # non-root so the branch is hit
     with pytest.raises(ValueError, match="Unknown json tag type: LIST for tag TestTag"):
         visitor.visit(tag)
+
+
+def test_convert_raises_when_root_is_none(monkeypatch):
+    def mock_SdbOpenDatabase(path, path_type):
+        return None
+
+    monkeypatch.setattr(winapi, "SdbOpenDatabase", mock_SdbOpenDatabase)
+
+    db = SdbDatabase("test.sdb", PathType.DOS_PATH)
+    with pytest.raises(RuntimeError, match="Failed to get root tag from database"):
+        sdb2json_convert(
+            db=db,
+            output_stream=io.StringIO(),
+            exclude_tags=[],
+            with_annotations=False,
+            with_tagid=False,
+            with_tag=False,
+        )
 
 
 def test_db_with_tagid_and_tag(all_tags_sdb):
