@@ -1,6 +1,6 @@
 [project]
 name = "sdbtool"
-version = "0.8.0"
+version = "0.9.0"
 description = "Interact with .sdb (application compatibility shim database) files"
 readme = "README.md"
 license = "MIT"
@@ -52,10 +52,24 @@ exclude = [
   "tests"
 ]
 
+[tool.hatch.build.targets.wheel]
+# Ship only the package, including the generated tag tables (tags.json) so name
+# resolution works for installed/uvx runs. The offline generator lives in tools/,
+# outside the package, so it is never bundled in the wheel.
+include = ["sdbtool"]
+artifacts = ["sdbtool/apphelp/tags/tags.json"]
+
 [dependency-groups]
 dev = [
     "pytest>=8.4.1",
     "pytest-cov>=6.2.1",
+]
+# Optional deps for tools/generate_tags.py only (not installed by default, never
+# shipped). Speakeasy is the fallback backend for apphelp.dll versions the OS
+# refuses to load natively. Use: `uv sync --group gen`.
+gen = [
+    "speakeasy-emulator>=1.5",
+    "setuptools<81",  # speakeasy's pinned unicorn 1.0.2 still imports pkg_resources
 ]
 
 [tool.coverage.run]

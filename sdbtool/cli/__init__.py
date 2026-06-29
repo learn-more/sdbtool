@@ -12,7 +12,6 @@ from sdbtool.cli.info import command as info_command
 from sdbtool.cli.gui import command as gui_command
 import click
 
-
 CONTEXT_SETTINGS = dict(
     max_content_width=200,
 )

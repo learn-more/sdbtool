@@ -7,6 +7,8 @@ COPYRIGHT:   Copyright 2026 Mark Jansen <mark.jansen@reactos.org>
 
 import click
 
+from sdbtool.apphelp.tags import KNOWN_VERSIONS
+
 AUTO_EXCLUDE = ["INDEXES", "STRINGTABLE"]
 
 
@@ -36,5 +38,13 @@ def common_sdb_options(f):
     )(f)
     f = click.option(
         "--tag/--no-tag", default=False, help="Include tag number in the output."
+    )(f)
+    f = click.option(
+        "--target-os",
+        type=click.Choice(KNOWN_VERSIONS, case_sensitive=False),
+        default=None,
+        metavar="VERSION",
+        help="Resolve tag names as of this Windows version, for older databases"
+        f" (one of: {', '.join(KNOWN_VERSIONS)}) [default: newest].",
     )(f)
     return f

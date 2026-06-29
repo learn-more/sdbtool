@@ -38,12 +38,9 @@ def test_sdb2xml_command(tmp_path, monkeypatch):
     monkeypatch.setattr(
         sdb2xml,
         "sdb2xml_convert",
-        lambda db,
-        output_stream,
-        exclude_tags,
-        annotations,
-        with_tagid,
-        with_tag: click.echo(f"nop:{exclude_tags}"),
+        lambda db, output_stream, exclude_tags, annotations, with_tagid, with_tag: click.echo(
+            f"nop:{exclude_tags}"
+        ),
     )
     runner = CliRunner()
     db_file = str(TESTDATA_FOLDER / "all_tagtypes.sdb")
@@ -199,12 +196,9 @@ def test_sdb2json_command(tmp_path, monkeypatch):
     monkeypatch.setattr(
         sdb2json,
         "sdb2json_convert",
-        lambda db,
-        output_stream,
-        exclude_tags,
-        with_annotations,
-        with_tagid,
-        with_tag: click.echo(f"nop:{exclude_tags}"),
+        lambda db, output_stream, exclude_tags, with_annotations, with_tagid, with_tag: click.echo(
+            f"nop:{exclude_tags}"
+        ),
     )
     runner = CliRunner()
     db_file = str(TESTDATA_FOLDER / "all_tagtypes.sdb")
@@ -235,7 +229,7 @@ def test_sdb2json_exception(tmp_path, monkeypatch):
 
 
 def test_sdb_database_param_type():
-    """ Test some click requirements for the SDB_DATABASE type. """
+    """Test some click requirements for the SDB_DATABASE type."""
     db_file = TESTDATA_FOLDER / "all_tagtypes.sdb"
     with SdbDatabase(db_file) as db:
         converted = SDB_DATABASE.convert(db, None, None)

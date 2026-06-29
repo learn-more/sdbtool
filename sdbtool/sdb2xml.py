@@ -11,6 +11,8 @@ from sdbtool.apphelp import (
     TagType,
     Tag,
     tag_value_to_string,
+    is_excluded,
+    xml_tag_name,
 )
 from sdbtool.xml import XmlWriter
 import enum
@@ -48,7 +50,7 @@ class XmlTagVisitor(TagVisitor):
         self.writer = XmlWriter(stream)
         self._first = True
         self._input_filename = input_filename
-        self._exclude_tags = exclude_tags
+        self._exclude_tags = set(exclude_tags)
         self._annotations = annotations
         self._with_tagid = with_tagid
         self._with_tag = with_tag
@@ -56,7 +58,7 @@ class XmlTagVisitor(TagVisitor):
 
     def visit_list_begin(self, tag: Tag):
         """Visit the beginning of a list tag."""
-        if tag.name in self._exclude_tags:
+        if is_excluded(tag.name, self._exclude_tags):
             self._skip_depth += 1
         if self._skip_depth > 0:
             return
@@ -73,21 +75,21 @@ class XmlTagVisitor(TagVisitor):
                 attrs["tagid"] = f"{tag.tag_id}"
             if self._with_tag:
                 attrs["tag"] = f"0x{tag.tag:x}"
-        self.writer.open(tag.name, attrs)
+        self.writer.open(xml_tag_name(tag.name), attrs)
 
     def visit_list_end(self, tag: Tag):
         """Visit the end of a list tag."""
         if self._skip_depth > 0:
-            if tag.name in self._exclude_tags:
+            if is_excluded(tag.name, self._exclude_tags):
                 self._skip_depth -= 1
             return
-        self.writer.close(tag.name)
+        self.writer.close(xml_tag_name(tag.name))
 
     def visit(self, tag: Tag):
         """Visit a tag."""
         if self._skip_depth > 0:
             return
-        if tag.name in self._exclude_tags:
+        if is_excluded(tag.name, self._exclude_tags):
             return
 
         ids = {}
@@ -96,8 +98,9 @@ class XmlTagVisitor(TagVisitor):
         if self._with_tag:
             ids["tag"] = f"0x{tag.tag:x}"
 
+        name = xml_tag_name(tag.name)
         if tag.type == TagType.NULL:
-            self.writer.empty_tag(tag.name, ids)
+            self.writer.empty_tag(name, ids)
             return
 
         typename = tagtype_to_xmltype(tag.type)
@@ -108,9 +111,9 @@ class XmlTagVisitor(TagVisitor):
         attrs = {"type": typename}
         attrs.update(ids)
 
-        self.writer.open(tag.name, attrs)
+        self.writer.open(name, attrs)
         self._write_tag_value(tag)
-        self.writer.close(tag.name)
+        self.writer.close(name)
 
     def _write_tag_value(self, tag: Tag):
         value, comment = tag_value_to_string(tag)
@@ -136,7 +139,7 @@ def convert(
         with_tag=with_tag,
     )
     root = db.root()
-    assert root is not None, (
-        "This is impossible, otherwise the previous exception would have been raised."
-    )
+    assert (
+        root is not None
+    ), "This is impossible, otherwise the previous exception would have been raised."
     root.accept(visitor)

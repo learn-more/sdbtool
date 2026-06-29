@@ -18,12 +18,12 @@ from datetime import datetime, timezone
 
 import pefile
 
-from sdbtool.apphelp.tags.Win10 import tag_id_to_string
+from sdbtool.apphelp.tags import tag_id_to_string
 
 ATTRIBUTE_AVAILABLE = 0x1
 ATTRIBUTE_FAILED = 0x2
 
-# Tag ids (see sdbtagid.h / tags/Win10.py)
+# Tag ids (see sdbtagid.h / tags/tags.json)
 TAG_SIZE = 0x4001
 TAG_CHECKSUM = 0x4003
 TAG_MODULE_TYPE = 0x4006
