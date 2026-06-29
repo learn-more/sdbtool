@@ -41,9 +41,18 @@ uvx sdbtool sdb2xml your.sdb                        # Convert the file 'your.sdb
 uvx sdbtool sdb2xml your.sdb --output your.xml      # Convert the file 'your.sdb' to xml, and write it to 'your.xml'
 uvx sdbtool sdb2json your.sdb                       # Convert the file 'your.sdb' to json, and print it to the console
 uvx sdbtool sdb2json your.sdb --output your.json    # Convert the file 'your.sdb' to json, and write it to 'your.json'
+uvx sdbtool sdb2xml old.sdb --target-os 0501        # Resolve tag names as of Windows XP (for older databases)
 uvx sdbtool attributes your.exe                     # Show the file attributes as recognized by apphelp in an XML-friendly format
 uvx sdbtool info your.sdb                           # Show some details about the SDB file (version, description, ...)
 ```
+
+### Tag names and `--target-os`
+
+Tag names are not constant across Windows versions: some are renamed (e.g. `OS_PLATFORM`
+became `GUEST_TARGET_PLATFORM`) and some are dropped (e.g. `OS_SKU` exists on XP but not on
+Windows 11). `sdb2xml` / `sdb2json` therefore accept `--target-os <VERSION>` to resolve names as
+of a particular Windows release; without it, names are resolved against the newest known table.
+An unknown tag is rendered as `InvalidTag_0xXXXX`, keeping its raw number visible.
 
 Or install sdbtool with `uv` (recommended), `pip`, or `pipx`:
 
@@ -74,3 +83,24 @@ pipx upgrade sdbtool
 ## Contributing<a id="contributing"></a>
 
 Contributions are welcome! Please open issues or submit pull requests.
+
+### Regenerating the tag tables
+
+The tag-id → name tables live in [`sdbtool/apphelp/tags/tags.json`](sdbtool/apphelp/tags/tags.json)
+as a `base` table plus per-version `add` / `override` / `remove` deltas. They are produced offline
+from every `apphelp.dll` version by [`tools/generate_tags.py`](tools/generate_tags.py), which calls
+the DLL's `SdbTagToString` export. This generator is author-only and is not shipped in the package.
+
+Each DLL is read with **[Speakeasy](https://github.com/mandiant/speakeasy)** (Mandiant's emulator):
+it parses and emulates the PE regardless of bitness, so one 64-bit run handles the x86 (XP / 2003)
+DLLs as well as DLLs the OS refuses to load natively (some Win7/8.1 `apphelp.dll` fail a real
+`LoadLibrary` with `WinError 182`). Speakeasy lives in the optional `gen` dependency group; emulating
+every export call is slow (minutes for the full set), which is fine for this offline step.
+
+```shell
+uv run --group gen python tools/generate_tags.py --data-dir path\to\apphelp\dlls
+```
+
+The data directory is expected to contain `<version>/<arch>/apphelp.dll` files (e.g.
+`0501/x86/apphelp.dll`, `0A00-26200/x64-64/apphelp.dll`); add more versions by dropping their
+`apphelp.dll` in and regenerating.

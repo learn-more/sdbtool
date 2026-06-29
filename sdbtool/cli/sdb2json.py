@@ -26,9 +26,10 @@ from sdbtool.sdb2json import convert as sdb2json_convert
 )
 @common_sdb_options
 @click.pass_context
-def command(ctx, input_file, output, annotations, exclude, tagid, tag):
+def command(ctx, input_file, output, annotations, exclude, tagid, tag, target_os):
     """Convert an SDB file to JSON format."""
     try:
+        input_file.target_os = target_os
         sdb2json_convert(
             db=input_file,
             output_stream=output,

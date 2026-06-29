@@ -11,6 +11,8 @@ from sdbtool.apphelp import (
     TagType,
     Tag,
     tag_value_to_string,
+    is_excluded,
+    normalize_tag_name,
 )
 import json
 
@@ -54,7 +56,7 @@ class JsonTagVisitor(TagVisitor):
                 self._root_meta["tag_num"] = f"0x{tag.tag:x}"
             return
 
-        node: dict = {"tag": tag.name}
+        node: dict = {"tag": normalize_tag_name(tag.name)}
         if self._with_tagid:
             node["tagid"] = tag.tag_id
         if self._with_tag:
@@ -70,7 +72,7 @@ class JsonTagVisitor(TagVisitor):
 
     def visit(self, tag: Tag):
         if tag.type == TagType.NULL:
-            node: dict = {"tag": tag.name, "type": "null"}
+            node: dict = {"tag": normalize_tag_name(tag.name), "type": "null"}
             if self._with_tagid:
                 node["tagid"] = tag.tag_id
             if self._with_tag:
@@ -85,7 +87,7 @@ class JsonTagVisitor(TagVisitor):
             )
 
         value, comment = tag_value_to_string(tag)
-        node = {"tag": tag.name, "type": typename, "value": value}
+        node = {"tag": normalize_tag_name(tag.name), "type": typename, "value": value}
         if self._with_tagid:
             node["tagid"] = tag.tag_id
         if self._with_tag:
@@ -107,7 +109,7 @@ class _FilteringVisitor(TagVisitor):
         self._skip_depth = 0
 
     def visit_list_begin(self, tag: Tag):
-        if tag.name in self._exclude_tags:
+        if is_excluded(tag.name, self._exclude_tags):
             self._skip_depth += 1
         if self._skip_depth > 0:
             return
@@ -115,7 +117,7 @@ class _FilteringVisitor(TagVisitor):
 
     def visit_list_end(self, tag: Tag):
         if self._skip_depth > 0:
-            if tag.name in self._exclude_tags:
+            if is_excluded(tag.name, self._exclude_tags):
                 self._skip_depth -= 1
             return
         self._inner.visit_list_end(tag)
@@ -123,7 +125,7 @@ class _FilteringVisitor(TagVisitor):
     def visit(self, tag: Tag):
         if self._skip_depth > 0:
             return
-        if tag.name in self._exclude_tags:
+        if is_excluded(tag.name, self._exclude_tags):
             return
         self._inner.visit(tag)
 

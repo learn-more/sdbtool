@@ -5,6 +5,7 @@ PURPOSE:     High level interface to the AppHelp API for reading SDB files.
 COPYRIGHT:   Copyright 2025,2026 Mark Jansen <mark.jansen@reactos.org>
 """
 
+import re
 from enum import IntEnum, IntFlag
 from base64 import b64encode
 from uuid import UUID
@@ -12,7 +13,10 @@ from . import winapi as apphelp
 from .sdb_reader import SdbFile
 from datetime import datetime, timezone
 from abc import ABC, abstractmethod
-from .tags import Win10Tags as Tags, tag_id_to_string
+from .tags import (
+    WellKnownTags as Tags,
+    tag_id_to_string,
+)
 from pathlib import Path
 from os import PathLike
 
@@ -61,6 +65,53 @@ def get_tag_type(tag: int) -> TagType:
     return TagType(tag & TagType.MASK)
 
 
+_PAREN_SUFFIX = re.compile(r"\s*\([^)]*\)\s*$")
+
+
+def normalize_tag_name(name: str) -> str:
+    """Clean a raw Windows tag name into an identifier-ish form.
+
+    apphelp's ``SdbTagToString`` returns display strings for some older tags
+    (e.g. ``"MSI TRANSFORM"``, ``"EXE_ID(GUID)"``). Drop a trailing parenthesised
+    suffix and turn spaces into underscores. Shared by the JSON and XML output and
+    by the GUID-comment heuristic.
+    """
+    # Almost every name is already clean; skip the regex on the hot path.
+    if "(" not in name and " " not in name:
+        return name
+    return _PAREN_SUFFIX.sub("", name).replace(" ", "_")
+
+
+def xml_tag_name(name: str) -> str:
+    """Normalized name usable as an XML element name.
+
+    Like :func:`normalize_tag_name` but also guards a leading digit, which is
+    invalid for an XML Name (``16BIT_DESCRIPTION`` -> ``S16BIT_DESCRIPTION``, the
+    form XP/2003 apphelp itself uses).
+    """
+    name = normalize_tag_name(name)
+    return "S" + name if name[:1].isdigit() else name
+
+
+def is_excluded(name: str, exclude_tags) -> bool:
+    """Whether a tag ``name`` is excluded.
+
+    Matches the raw Windows name as well as its normalized (JSON) and XML-safe
+    forms, so ``--exclude MSI_TRANSFORM`` (the name seen in output) works even when
+    the raw name for an older target is ``"MSI TRANSFORM"``.
+
+    Unknown tags are named ``InvalidTag_0x….`` per tag id, so excluding the bare
+    token ``"InvalidTag"`` matches every unknown tag by prefix.
+    """
+    if not exclude_tags:  # the common case: nothing excluded
+        return False
+    normalized = normalize_tag_name(name)
+    xml_name = "S" + normalized if normalized[:1].isdigit() else normalized
+    if name in exclude_tags or normalized in exclude_tags or xml_name in exclude_tags:
+        return True
+    return name.startswith("InvalidTag") and "InvalidTag" in exclude_tags
+
+
 def _value_to_flags(value: int, flags: type[IntFlag]) -> str:
     """Converts a value to a string representation of its flags."""
     values = []
@@ -79,7 +130,9 @@ def tag_value_to_string(tag: "Tag") -> tuple[str, str | None]:
     elif tag.type == TagType.WORD:
         value = tag.read_word()
         if tag.tag in (Tags.INDEX_TAG, Tags.INDEX_KEY):
-            return f"{value}", f"{tag_id_to_string(value)}"
+            return f"{value}", normalize_tag_name(
+                tag_id_to_string(value, tag.db.target_os)
+            )
         return f"{value}", None
     elif tag.type == TagType.DWORD:
         value = tag.read_dword()
@@ -109,7 +162,7 @@ def tag_value_to_string(tag: "Tag") -> tuple[str, str | None]:
         data = tag.read_bytes()
         if data:
             base64_data = b64encode(data).decode("utf-8")
-            if tag.name.endswith("_ID") and len(data) == 16:
+            if normalize_tag_name(tag.name).endswith("_ID") and len(data) == 16:
                 return base64_data, f"{{{UUID(bytes_le=data)}}}"
             return base64_data, None
         return "", None
@@ -139,7 +192,7 @@ class Tag:
             self.type = TagType.LIST
         else:
             self.tag = apphelp.SdbGetTagFromTagID(self._ensure_db_handle(), tag_id)
-            self.name = tag_id_to_string(self.tag)
+            self.name = tag_id_to_string(self.tag, self.db.target_os)
             self.type = get_tag_type(self.tag)
 
     def _ensure_db_handle(self) -> SdbFile:
@@ -221,10 +274,18 @@ class TagVisitor(ABC):
 
 
 class SdbDatabase:
-    def __init__(self, path: str | PathLike, path_type: PathType = PathType.DOS_PATH):
+    def __init__(
+        self,
+        path: str | PathLike,
+        path_type: PathType = PathType.DOS_PATH,
+        target_os: str | None = None,
+    ):
         self.path = Path(path)
         self.name = self.path.name
         self.path_type = path_type
+        # Which OS' tag table to resolve names against (None = newest); see
+        # sdbtool.apphelp.tags.tag_id_to_string.
+        self.target_os = target_os
         self._handle = apphelp.SdbOpenDatabase(str(path), path_type)
         self._root = None
 

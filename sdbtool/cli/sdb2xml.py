@@ -30,9 +30,10 @@ from sdbtool.sdb2xml import convert as sdb2xml_convert, XmlAnnotations
 )
 @common_sdb_options
 @click.pass_context
-def command(ctx, input_file, output, annotations, exclude, tagid, tag):
+def command(ctx, input_file, output, annotations, exclude, tagid, tag, target_os):
     """Convert an SDB file to XML format."""
     try:
+        input_file.target_os = target_os
         sdb2xml_convert(
             db=input_file,
             output_stream=output,

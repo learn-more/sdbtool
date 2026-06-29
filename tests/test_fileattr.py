@@ -104,10 +104,17 @@ def test_format_value_branches():
         return format_attribute(AttrInfo(tag, ATTRIBUTE_AVAILABLE, value))
 
     assert fmt(fa.TAG_SIZE, 2048) == 'SIZE="2048"'
-    assert fmt(fa.TAG_BIN_FILE_VERSION, 0x0001000200030004) == 'BIN_FILE_VERSION="1.2.3.4"'
+    assert (
+        fmt(fa.TAG_BIN_FILE_VERSION, 0x0001000200030004) == 'BIN_FILE_VERSION="1.2.3.4"'
+    )
     assert fmt(fa.TAG_LINK_DATE, 0) == 'LINK_DATE="01/01/1970 00:00:00"'
-    assert fmt(fa.TAG_VER_LANGUAGE, 0xFFFF) == 'VER_LANGUAGE="Language Neutral [0xffff]"'
-    assert fmt(fa.TAG_VER_LANGUAGE, 0x0409) == 'VER_LANGUAGE="English (United States) [0x409]"'
+    assert (
+        fmt(fa.TAG_VER_LANGUAGE, 0xFFFF) == 'VER_LANGUAGE="Language Neutral [0xffff]"'
+    )
+    assert (
+        fmt(fa.TAG_VER_LANGUAGE, 0x0409)
+        == 'VER_LANGUAGE="English (United States) [0x409]"'
+    )
     assert fmt(fa.TAG_VER_LANGUAGE, 0x0999) == 'VER_LANGUAGE="Language Neutral [0x999]"'
     assert fmt(fa.TAG_MODULE_TYPE, 3) == 'MODULE_TYPE="WIN32"'
     assert fmt(fa.TAG_MODULE_TYPE, 99) == 'MODULE_TYPE="NONE"'

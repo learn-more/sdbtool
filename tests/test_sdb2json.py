@@ -25,45 +25,45 @@ ALL_TAGS_RESULT = """{
       "tag": "DATABASE",
       "children": [
         {
-          "tag": "InvalidTag",
+          "tag": "InvalidTag_0x7000",
           "children": []
         },
         {
-          "tag": "InvalidTag",
+          "tag": "InvalidTag_0x1000",
           "type": "null"
         },
         {
-          "tag": "InvalidTag",
+          "tag": "InvalidTag_0x2000",
           "type": "byte",
           "value": "255"
         },
         {
-          "tag": "InvalidTag",
+          "tag": "InvalidTag_0x3000",
           "type": "word",
           "value": "65535"
         },
         {
-          "tag": "InvalidTag",
+          "tag": "InvalidTag_0x4000",
           "type": "dword",
           "value": "4294967295"
         },
         {
-          "tag": "InvalidTag",
+          "tag": "InvalidTag_0x5000",
           "type": "qword",
           "value": "18446744073709551615"
         },
         {
-          "tag": "InvalidTag",
+          "tag": "InvalidTag_0x9000",
           "type": "binary",
           "value": "//////////8="
         },
         {
-          "tag": "InvalidTag",
+          "tag": "InvalidTag_0x8000",
           "type": "string",
           "value": ""
         },
         {
-          "tag": "InvalidTag",
+          "tag": "InvalidTag_0x6000",
           "type": "string",
           "value": ""
         },
@@ -76,7 +76,7 @@ ALL_TAGS_RESULT = """{
           "type": "null"
         },
         {
-          "tag": "InvalidTag",
+          "tag": "InvalidTag_0x2001",
           "type": "byte",
           "value": "0"
         },
@@ -96,12 +96,12 @@ ALL_TAGS_RESULT = """{
           "value": "0"
         },
         {
-          "tag": "InvalidTag",
+          "tag": "InvalidTag_0x9001",
           "type": "binary",
           "value": "AAAAAAAAAAA="
         },
         {
-          "tag": "InvalidTag",
+          "tag": "InvalidTag_0x8001",
           "type": "string",
           "value": "val"
         },
@@ -341,10 +341,7 @@ def test_database_with_exclude_tags(all_tags_sdb):
     assert "PATCH" not in tags
     assert "BIN_FILE_VERSION" not in tags
     # LINK_DATE lives inside PATCH > APP > EXE which is excluded
-    assert all(
-        c["tag"] != "LINK_DATE"
-        for c in db_children
-    )
+    assert all(c["tag"] != "LINK_DATE" for c in db_children)
 
 
 def test_no_annotations(all_tags_sdb):
@@ -429,3 +426,26 @@ def test_db_with_tagid_and_tag(all_tags_sdb):
         with_tag=True,
     )
     assert output.getvalue() == STRIPPED_TAG_TAGID_RESULT
+
+
+class _FakeTag:
+    """Minimal duck-typed Tag for exercising the visitor name handling."""
+
+    def __init__(self, name, type_, tag=0x0, tag_id=0):
+        self.name = name
+        self.type = type_
+        self.tag = tag
+        self.tag_id = tag_id
+
+
+def test_json_normalizes_tag_names():
+    v = JsonTagVisitor(
+        "f.sdb", with_annotations=False, with_tagid=False, with_tag=False
+    )
+    v.visit(_FakeTag("EXE_ID(GUID)", TagType.NULL))
+    # Leading digit is fine in JSON, so it is kept (no "S" prefix).
+    v.visit(_FakeTag("16BIT_DESCRIPTION", TagType.NULL))
+    v.visit_list_begin(_FakeTag("MSI TRANSFORM", TagType.LIST, tag_id=1))
+    v.visit_list_end(_FakeTag("MSI TRANSFORM", TagType.LIST, tag_id=1))
+    names = [c["tag"] for c in v.result()["children"]]
+    assert names == ["EXE_ID", "16BIT_DESCRIPTION", "MSI_TRANSFORM"]

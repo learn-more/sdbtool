@@ -65,9 +65,9 @@ def show_gui(db: SdbDatabase):
 
     visitor = GuiTagVisitor(treeview)
     root = db.root()
-    assert root is not None, (
-        "This is impossible, otherwise the previous exception would have been raised."
-    )
+    assert (
+        root is not None
+    ), "This is impossible, otherwise the previous exception would have been raised."
     root.accept(visitor)
     treeview.pack(fill=tk.BOTH, expand=True)
     window.mainloop()

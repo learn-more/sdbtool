@@ -21,23 +21,23 @@ TESTDATA_FOLDER = Path(__file__).parent / "data"
 ALL_TAGS_RESULT = """<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <SDB xmlns:xs="http://www.w3.org/2001/XMLSchema" file="all_tagtypes.sdb">
   <DATABASE>
-    <InvalidTag></InvalidTag>
-    <InvalidTag />
-    <InvalidTag type="xs:byte">255</InvalidTag>
-    <InvalidTag type="xs:unsignedShort">65535</InvalidTag>
-    <InvalidTag type="xs:unsignedInt">4294967295</InvalidTag>
-    <InvalidTag type="xs:unsignedLong">18446744073709551615</InvalidTag>
-    <InvalidTag type="xs:base64Binary">//////////8=</InvalidTag>
-    <InvalidTag type="xs:string"></InvalidTag>
-    <InvalidTag type="xs:string"></InvalidTag>
+    <InvalidTag_0x7000></InvalidTag_0x7000>
+    <InvalidTag_0x1000 />
+    <InvalidTag_0x2000 type="xs:byte">255</InvalidTag_0x2000>
+    <InvalidTag_0x3000 type="xs:unsignedShort">65535</InvalidTag_0x3000>
+    <InvalidTag_0x4000 type="xs:unsignedInt">4294967295</InvalidTag_0x4000>
+    <InvalidTag_0x5000 type="xs:unsignedLong">18446744073709551615</InvalidTag_0x5000>
+    <InvalidTag_0x9000 type="xs:base64Binary">//////////8=</InvalidTag_0x9000>
+    <InvalidTag_0x8000 type="xs:string"></InvalidTag_0x8000>
+    <InvalidTag_0x6000 type="xs:string"></InvalidTag_0x6000>
     <DATABASE></DATABASE>
     <INCLUDE />
-    <InvalidTag type="xs:byte">0</InvalidTag>
+    <InvalidTag_0x2001 type="xs:byte">0</InvalidTag_0x2001>
     <MATCH_MODE type="xs:unsignedShort">0</MATCH_MODE>
     <SIZE type="xs:unsignedInt">0</SIZE>
     <BIN_FILE_VERSION type="xs:unsignedLong">0</BIN_FILE_VERSION>
-    <InvalidTag type="xs:base64Binary">AAAAAAAAAAA=</InvalidTag>
-    <InvalidTag type="xs:string">val</InvalidTag>
+    <InvalidTag_0x9001 type="xs:base64Binary">AAAAAAAAAAA=</InvalidTag_0x9001>
+    <InvalidTag_0x8001 type="xs:string">val</InvalidTag_0x8001>
     <NAME type="xs:string"></NAME>
     <LIBRARY>
       <INDEX_TAG type="xs:unsignedShort">14338<!-- INDEX_TAG --></INDEX_TAG>
@@ -192,3 +192,30 @@ def test_db_with_tagid_and_tag(all_tags_sdb):
     output.seek(0)
     xml_content = output.read()
     assert xml_content == STRIPPED_TAG_TAGID_RESULT
+
+
+class _FakeTag:
+    """Minimal duck-typed Tag for exercising the visitor name handling."""
+
+    def __init__(self, name, type_, tag=0x0, tag_id=0):
+        self.name = name
+        self.type = type_
+        self.tag = tag
+        self.tag_id = tag_id
+
+
+def test_xml_normalizes_element_names():
+    output = io.StringIO()
+    v = XmlTagVisitor(output, "f.sdb", [], XmlAnnotations.Disabled, False, False)
+    # NULL tags with raw Windows names -> valid XML element names.
+    v.visit(_FakeTag("EXE_ID(GUID)", TagType.NULL))
+    v.visit(_FakeTag("16BIT_DESCRIPTION", TagType.NULL))
+    # A list tag with a space -> matching normalized open/close.
+    v.visit_list_begin(_FakeTag("MSI TRANSFORM", TagType.LIST))
+    v.visit_list_end(_FakeTag("MSI TRANSFORM", TagType.LIST))
+    out = output.getvalue()
+    assert "<EXE_ID />" in out
+    assert "<S16BIT_DESCRIPTION />" in out
+    assert "<MSI_TRANSFORM" in out and "</MSI_TRANSFORM>" in out
+    # No raw forms leaked into element names.
+    assert "(" not in out and "MSI TRANSFORM" not in out

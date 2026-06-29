@@ -57,7 +57,9 @@ HDR = b"\x00" * 12
 def test_first_child():
     assert r.SdbGetFirstChild(mk(b"x" * 12), r.TAGID_ROOT) == r.TAGID_NULL
     assert r.SdbGetFirstChild(mk(b"x" * 16), r.TAGID_ROOT) == r._TAGID_ROOT
-    assert r.SdbGetFirstChild(mk(HDR + W(0x4000) + D(0)), 12) == r.TAGID_NULL  # not list
+    assert (
+        r.SdbGetFirstChild(mk(HDR + W(0x4000) + D(0)), 12) == r.TAGID_NULL
+    )  # not list
     assert r.SdbGetFirstChild(mk(HDR + W(0x7000) + D(0)), 12) == r.TAGID_NULL  # empty
     pdb = mk(HDR + W(0x7000) + D(4) + W(0x4000) + D(0))
     assert r.SdbGetFirstChild(pdb, 12) == 18  # 12 + sizeof(TAG) + sizeof(DWORD)
@@ -65,7 +67,10 @@ def test_first_child():
 
 def test_next_child():
     # prev_child is a NULL-nibble tag -> size 0 -> no next
-    assert r.SdbGetNextChild(mk(HDR + W(0x0000) + b"\x00" * 8), r.TAGID_ROOT, 12) == r.TAGID_NULL
+    assert (
+        r.SdbGetNextChild(mk(HDR + W(0x0000) + b"\x00" * 8), r.TAGID_ROOT, 12)
+        == r.TAGID_NULL
+    )
     # next_child runs past the end of the database
     pdb = mk(HDR + W(0x4000) + D(0))  # one DWORD tag at 12
     assert r.SdbGetNextChild(pdb, r.TAGID_ROOT, 12) == r.TAGID_NULL
