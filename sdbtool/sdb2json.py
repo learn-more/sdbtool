@@ -14,6 +14,7 @@ from sdbtool.apphelp import (
     is_excluded,
     normalize_tag_name,
 )
+from sdbtool.writeproxy import WriteProxy
 import json
 
 
@@ -148,5 +149,10 @@ def convert(
     if root is None:
         raise RuntimeError("Failed to get root tag from database.")
     root.accept(_FilteringVisitor(visitor, exclude_tags))
-    json.dump(visitor.result(), output_stream, indent=2)
-    output_stream.write("\n")
+    # json.dump with indent=2 uses the pure-Python encoder, which emits millions
+    # of tiny writes; on a Click LazyFile each pays __getattr__ indirection,
+    # dominating the runtime. Resolve .write once via WriteProxy so the output
+    # still streams (no full-document buffer) but skips that per-fragment cost.
+    out = WriteProxy(output_stream)
+    json.dump(visitor.result(), out, indent=2)
+    out.write("\n")
