@@ -52,7 +52,7 @@ Tag names are not constant across Windows versions: some are renamed (e.g. `OS_P
 became `GUEST_TARGET_PLATFORM`) and some are dropped (e.g. `OS_SKU` exists on XP but not on
 Windows 11). `sdb2xml` / `sdb2json` therefore accept `--target-os <VERSION>` to resolve names as
 of a particular Windows release; without it, names are resolved against the newest known table.
-An unknown tag is rendered as `InvalidTag_0xXXXX`, keeping its raw number visible.
+An unknown tag is rendered as `InvalidTag_0xXXXX`.
 
 Or install sdbtool with `uv` (recommended), `pip`, or `pipx`:
 
@@ -89,13 +89,11 @@ Contributions are welcome! Please open issues or submit pull requests.
 The tag-id → name tables live in [`sdbtool/apphelp/tags/tags.json`](sdbtool/apphelp/tags/tags.json)
 as a `base` table plus per-version `add` / `override` / `remove` deltas. They are produced offline
 from every `apphelp.dll` version by [`tools/generate_tags.py`](tools/generate_tags.py), which calls
-the DLL's `SdbTagToString` export. This generator is author-only and is not shipped in the package.
+the DLL's `SdbTagToString` export.
 
-Each DLL is read with **[Speakeasy](https://github.com/mandiant/speakeasy)** (Mandiant's emulator):
+Each DLL is read with **[Speakeasy](https://github.com/mandiant/speakeasy)**:
 it parses and emulates the PE regardless of bitness, so one 64-bit run handles the x86 (XP / 2003)
-DLLs as well as DLLs the OS refuses to load natively (some Win7/8.1 `apphelp.dll` fail a real
-`LoadLibrary` with `WinError 182`). Speakeasy lives in the optional `gen` dependency group; emulating
-every export call is slow (minutes for the full set), which is fine for this offline step.
+DLLs as well as DLLs the OS refuses to load natively. Speakeasy lives in the optional `gen` dependency group.
 
 ```shell
 uv run --group gen python tools/generate_tags.py --data-dir path\to\apphelp\dlls

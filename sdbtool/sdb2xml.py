@@ -15,6 +15,7 @@ from sdbtool.apphelp import (
     xml_tag_name,
 )
 from sdbtool.xml import XmlWriter
+from sdbtool.writeproxy import WriteProxy
 import enum
 
 
@@ -130,8 +131,12 @@ def convert(
     with_tagid: bool,
     with_tag: bool,
 ):
+    # XmlWriter emits many small writes; sending each straight to a Click
+    # LazyFile pays __getattr__ indirection per fragment and dominates the
+    # runtime. Resolve .write once via WriteProxy so output keeps streaming
+    # (no full-document buffer) but skips that per-fragment cost.
     visitor = XmlTagVisitor(
-        output_stream,
+        WriteProxy(output_stream),
         db.name,
         exclude_tags,
         annotations,
